@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { speechSupported } from '../../lib/voice';
 
-export default function Composer({ onAddTask, onAddExam }) {
+export default function Composer({ onAddTask, onAddExam, onAddVoice }) {
   const [text, setText] = useState('');
+  const showMic = speechSupported();
 
   const submit = (e) => {
     e.preventDefault();
@@ -40,6 +42,16 @@ export default function Composer({ onAddTask, onAddExam }) {
           <path d="M12 5v14M5 12h14" />
         </svg>
       </button>
+      {showMic && (
+        <button
+          type="button"
+          onClick={() => onAddVoice && onAddVoice()}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted transition hover:bg-surface hover:text-white"
+          title="Smart audio dump — talk, I'll turn it into tasks"
+        >
+          🎤
+        </button>
+      )}
       <input
         className="flex-1 bg-transparent text-[var(--text)] placeholder-[var(--text-muted)] outline-none"
         placeholder="Write a task, or /task Study calculus…"

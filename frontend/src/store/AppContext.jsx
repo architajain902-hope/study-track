@@ -23,6 +23,7 @@ export function AppProvider({ children }) {
   const [topics, setTopics] = useState([]);
   const [testRecords, setTestRecords] = useState([]);
   const [studySessions, setStudySessions] = useState([]);
+  const [energyCheckins, setEnergyCheckins] = useState([]);
   const [streak, setStreak] = useState(null);
   const [daily, setDaily] = useState(EMPTY_DAILY);
   const [notifications, setNotifications] = useState([]);
@@ -169,6 +170,17 @@ export function AppProvider({ children }) {
     if (data) setStudySessions(data);
   }, []);
 
+  const loadEnergyCheckins = useCallback(async (uid) => {
+    if (!uid) { setEnergyCheckins([]); return; }
+    const { data } = await supabase
+      .from('energy_checkins')
+      .select('*')
+      .eq('user_id', uid)
+      .gte('created_at', dayjs().subtract(14, 'day').startOf('day').toISOString())
+      .order('created_at', { ascending: false });
+    if (data) setEnergyCheckins(data);
+  }, []);
+
   const refreshAll = useCallback(async () => {
     setFeedBusy(true);
     await Promise.all([
@@ -181,9 +193,10 @@ export function AppProvider({ children }) {
       loadTopics(userId),
       loadTestRecords(userId),
       loadStudySessions(userId),
+      loadEnergyCheckins(userId),
     ]);
     setFeedBusy(false);
-  }, [userId, loadProfile, loadStreak, loadDaily, loadTasks, loadExams, loadStudyPlans, loadTopics, loadTestRecords, loadStudySessions]);
+  }, [userId, loadProfile, loadStreak, loadDaily, loadTasks, loadExams, loadStudyPlans, loadTopics, loadTestRecords, loadStudySessions, loadEnergyCheckins]);
 
   useEffect(() => {
     if (session) refreshAll();
@@ -201,6 +214,7 @@ export function AppProvider({ children }) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'topic_tracking' }, refreshAll)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'test_records' }, refreshAll)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'study_sessions' }, refreshAll)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'energy_checkins' }, refreshAll)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'streaks' }, () => loadStreak(userId))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
         loadProfile(userId);
@@ -239,6 +253,7 @@ export function AppProvider({ children }) {
       topics,
       testRecords,
       studySessions,
+      energyCheckins,
       streak,
       activeStreak,
       daily,
@@ -412,6 +427,52 @@ export function AppProvider({ children }) {
         await loadStudySessions(userId);
         return data;
       },
+      addEnergyCheckin: async (payload) => {
+        const { data, error } = await supabase
+          .from('energy_checkins')
+          .insert({ user_id: userId, ...payload })
+          .select()
+          .single();
+        if (error) throw error;
+        await loadEnergyCheckins(userId);
+        return data;
+      },
+      // Dynamic schedule shifting — when energy drops, move today's heavy
+      // (hard-difficulty) plans + high-priority tasks a day later.
+      shiftHeavyToday: async () => {
+        if (!userId) return { plans: 0, tasks: 0 };
+        const todayStr = dayjs().format('YYYY-MM-DD');
+        const tomorrowStr = dayjs().add(1, 'day').format('YYYY-MM-DD');
+
+        const { data: heavyPlans } = await supabase
+          .from('study_plans')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('plan_date', todayStr)
+          .eq('difficulty', 'hard')
+          .eq('is_done', false);
+        for (const p of heavyPlans || []) {
+          await supabase.from('study_plans').update({ plan_date: tomorrowStr }).eq('id', p.id);
+        }
+
+        const start = dayjs().startOf('day').toISOString();
+        const end = dayjs().endOf('day').toISOString();
+        const { data: heavyTasks } = await supabase
+          .from('tasks')
+          .select('id, due_date')
+          .eq('user_id', userId)
+          .eq('priority', 1)
+          .eq('is_completed', false)
+          .gte('due_date', start)
+          .lte('due_date', end);
+        for (const t of heavyTasks || []) {
+          const next = dayjs(t.due_date).add(1, 'day').toISOString();
+          await supabase.from('tasks').update({ due_date: next }).eq('id', t.id);
+        }
+
+        await Promise.all([loadStudyPlans(userId), loadTasks(userId)]);
+        return { plans: (heavyPlans || []).length, tasks: (heavyTasks || []).length };
+      },
       commitStreak,
       fetchNotifications: async () => {
         try {
@@ -428,7 +489,7 @@ export function AppProvider({ children }) {
     }),
     [
       session, userId, profile, tasks, exams, streak, activeStreak, daily, notifications,
-      feedBusy, loadingAuth, commitStreak, studyPlans, topics, testRecords, studySessions,
+      feedBusy, loadingAuth, commitStreak, studyPlans, topics, testRecords, studySessions, energyCheckins,
     ]
   );
 

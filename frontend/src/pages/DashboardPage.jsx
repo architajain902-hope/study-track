@@ -4,15 +4,18 @@ import ChatFeed from '../components/chat/ChatFeed';
 import Composer from '../components/chat/Composer';
 import TaskForm from '../components/forms/TaskForm';
 import ExamForm from '../components/forms/ExamForm';
+import VoiceDumpModal from '../components/modals/VoiceDumpModal';
 import { useApp } from '../store/AppContext';
 
 export default function DashboardPage() {
   const { activeStreak } = useApp();
   const [taskModal, setTaskModal] = useState(null);   // null | { mode: 'quick', title?: '' }
   const [examModal, setExamModal] = useState(false);
+  const [voiceModal, setVoiceModal] = useState(false);
 
   const openTask = (preFill = '') => setTaskModal({ mode: 'quick', title: preFill });
   const openExam = () => setExamModal(true);
+  const openVoice = () => setVoiceModal(true);
 
   return (
     <PageShell
@@ -25,7 +28,7 @@ export default function DashboardPage() {
           <ChatFeed onAddQuick={() => openTask('')} />
         </div>
         <div className="border-t border-surface bg-surface-dark pb-safe">
-          <Composer onAddTask={openTask} onAddExam={openExam} />
+          <Composer onAddTask={openTask} onAddExam={openExam} onAddVoice={openVoice} />
         </div>
       </div>
 
@@ -36,6 +39,7 @@ export default function DashboardPage() {
         />
       )}
       {examModal && <ExamForm onClose={() => setExamModal(false)} />}
+      {voiceModal && <VoiceDumpModal onClose={() => setVoiceModal(false)} />}
     </PageShell>
   );
 }

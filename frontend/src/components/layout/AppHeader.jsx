@@ -1,11 +1,19 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../../store/AppContext';
-import { initials } from '../../lib/utils';
+import { initials, LOCAL_DATE, TODAY } from '../../lib/utils';
+import EnergyModal from '../modals/EnergyModal';
 
 export default function AppHeader({ title, subtitle }) {
-  const { profile, activeStreak, notifications } = useApp();
+  const { profile, activeStreak, notifications, energyCheckins } = useApp();
   const navigate = useNavigate();
   const hasAlerts = notifications.length > 0;
+  const [energyOpen, setEnergyOpen] = useState(false);
+
+  const todayEnergy = energyCheckins.find((c) => LOCAL_DATE(c.created_at) === TODAY());
+  const batteryColor = todayEnergy
+    ? todayEnergy.energy_level <= 3 ? '#F15C6D' : todayEnergy.energy_level <= 6 ? '#FFBE5C' : '#25D366'
+    : null;
 
   return (
     <header className="whatsapp-header sticky top-0 z-20">
@@ -20,6 +28,17 @@ export default function AppHeader({ title, subtitle }) {
       </button>
 
       <div className="flex items-center gap-2">
+        {todayEnergy && (
+          <button
+            type="button"
+            onClick={() => setEnergyOpen(true)}
+            className="chip bg-surface text-soft hover:bg-surface-light"
+            title="Cognitive battery — tap to re-check in"
+          >
+            <span className="text-sm">🔋</span>
+            <span className="font-bold" style={{ color: batteryColor }}>{todayEnergy.energy_level}</span>
+          </button>
+        )}
         {activeStreak > 0 && (
           <div
             className="chip bg-brand-light/25 text-brand-lighter"
@@ -79,6 +98,7 @@ export default function AppHeader({ title, subtitle }) {
           )}
         </button>
       </div>
+      {energyOpen && <EnergyModal onClose={() => setEnergyOpen(false)} />}
     </header>
   );
 }

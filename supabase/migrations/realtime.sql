@@ -3,6 +3,7 @@
 do $$ begin
   alter publication supabase_realtime add table
     public.tasks, public.exams, public.profiles, public.streaks,
-    public.study_plans, public.topic_tracking, public.test_records, public.study_sessions;
+    public.study_plans, public.topic_tracking, public.test_records, public.study_sessions,
+    public.energy_checkins;
 exception when duplicate_object then null;
 end $$;

@@ -4,7 +4,8 @@ import { useApp } from '../../store/AppContext';
 import TaskBubble from './TaskBubble';
 import ExamBubble from './ExamBubble';
 import { formatDay, sortFeed, dueLabel, daysUntil } from '../../lib/utils';
-import { greeting, MASCOT, welcomeMessage, streakMessage, goalMetMessage, coldStreakMessage, overdueMessage } from '../../lib/motivation';
+import { greeting, MASCOT, welcomeMessage, streakMessage, goalMetMessage, coldStreakMessage, overdueMessage, mascotMood, deadlineWit } from '../../lib/motivation';
+import { equippedCosmetic } from '../../lib/unlocks';
 
 function DateSeparator({ label }) {
   return (
@@ -52,7 +53,20 @@ function NotificationsBar({ notifications }) {
 }
 
 export default function ChatFeed({ onAddQuick }) {
-  const { tasks, exams, streak, activeStreak, daily, notifications, profile } = useApp();
+  const { tasks, exams, streak, activeStreak, daily, notifications, profile, energyCheckins } = useApp();
+
+  const todayEnergy = energyCheckins.find((c) => new Date(c.created_at).toDateString() === new Date().toDateString());
+  const examsSoon = exams.some((e) => daysUntil(e.exam_date) >= 0 && daysUntil(e.exam_date) <= 3);
+  const overdueCount = tasks.filter((t) => !t.is_completed && dueLabel(t.due_date).startsWith('Overdue')).length;
+  const mood = mascotMood({
+    activeStreak,
+    daily,
+    energy: todayEnergy?.energy_level ?? null,
+    examsSoon,
+    overdueCount,
+  });
+  const cosmetic = equippedCosmetic(profile);
+  const wiggle = examsSoon ? 'animate-bounce' : '';
 
   const feed = useMemo(() => {
     const items = [
@@ -93,8 +107,13 @@ export default function ChatFeed({ onAddQuick }) {
   return (
     <div className="min-h-full bg-chat-pattern px-3 py-3 pb-6">
       <div className="mb-3 flex items-end gap-2">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-lighter to-brand text-base shadow-bubble">
-          🦉
+        <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-lighter to-brand text-xl shadow-bubble">
+          <span className={`${wiggle}`}>{mood.face}</span>
+          {cosmetic && (
+            <span className="absolute -right-1 -top-1 rounded-full bg-surface-dark px-1 text-[11px] ring-1 ring-surface" title={cosmetic.name}>
+              {cosmetic.emoji}
+            </span>
+          )}
         </div>
         <div className="bubble bubble-in max-w-[75%]">
           <p className="text-[13.5px] leading-snug">
@@ -103,6 +122,16 @@ export default function ChatFeed({ onAddQuick }) {
           <p className="mt-1 text-[12px] text-muted">{greeting()}! I'm your study buddy. Tell me a task, an exam, or a plan and I'll keep you on track. 🌱</p>
         </div>
       </div>
+
+      <SystemMessage>
+        <b>{mood.label}:</b> {mood.message}
+      </SystemMessage>
+
+      {examsSoon && (
+        <div className="mt-2">
+          <SystemMessage>🗓 {deadlineWit(exams.find((e) => daysUntil(e.exam_date) >= 0 && daysUntil(e.exam_date) <= 3).subject, daysUntil(exams.find((e) => daysUntil(e.exam_date) >= 0 && daysUntil(e.exam_date) <= 3).exam_date))}</SystemMessage>
+        </div>
+      )}
 
       <SystemMessage>
         🎯 Daily goal: <b>{daily.completed}</b>/{daily.goal} tasks done today

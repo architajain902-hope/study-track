@@ -3,10 +3,12 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useApp } from '../store/AppContext';
 import PageShell from '../components/layout/PageShell';
 import ExamForm from '../components/forms/ExamForm';
+import CrisisForm from '../components/forms/CrisisForm';
 import { formatFull, daysUntil, dueLabel, daysAgoLabel } from '../lib/utils';
 
 function ExamDetail({ exam, onClose, onBack }) {
   const { deleteExam } = useApp();
+  const [crisis, setCrisis] = useState(false);
   const diff = daysUntil(exam.exam_date);
 
   const onDelete = async () => {
@@ -48,9 +50,14 @@ function ExamDetail({ exam, onClose, onBack }) {
       </div>
 
       <div className="mt-4 flex gap-2">
+        {diff >= 0 && (
+          <button type="button" onClick={() => setCrisis(true)} className="btn-danger flex-1 py-2.5 text-sm">🆘 Crisis mode</button>
+        )}
         <button type="button" onClick={onClose} className="btn-secondary flex-1 py-2.5 text-sm">✏️ Edit</button>
         <button type="button" onClick={onDelete} className="btn-danger flex-1 py-2.5 text-sm">🗑 Delete</button>
       </div>
+
+      {crisis && <CrisisForm subject={exam.subject} examDate={exam.exam_date} onClose={() => setCrisis(false)} />}
     </div>
   );
 }

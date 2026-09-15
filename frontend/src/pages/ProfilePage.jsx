@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useApp } from '../store/AppContext';
 import PageShell from '../components/layout/PageShell';
 import { initials } from '../lib/utils';
 import { useTheme } from '../lib/theme';
 import { requestNotifPermission } from '../lib/useBrowserNotifications';
+import { UNLOCKS, totalFocusMinutes, equippedCosmetic, nextUnlock } from '../lib/unlocks';
 
 export default function ProfilePage() {
   const {
@@ -27,6 +28,11 @@ export default function ProfilePage() {
   const notifGranted = notifSupported && Notification.permission === 'granted';
 
   const user = session?.user;
+
+  const focusMins = useMemo(() => totalFocusMinutes(studySessions), [studySessions]);
+  const owned = new Set(profile?.unlocks || []);
+  const equipped = equippedCosmetic(profile);
+  const upNext = nextUnlock(profile, studySessions);
 
   const save = async () => {
     setSaving(true);
@@ -216,7 +222,56 @@ export default function ProfilePage() {
           {notifMsg && <p className={`mt-2 text-[12.5px] ${notifMsg.startsWith('❌') ? 'text-danger' : 'text-brand-lighter'}`}>{notifMsg}</p>}
         </div>
 
-        {/* Backup & restore */}
+        {/* Mascot closet */}
+        <div className="rounded-xl bg-surface-dark p-4 ring-1 ring-surface">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium text-white">🦉 Mascot closet</p>
+              <p className="text-[12px] text-muted">
+                {equipped ? `Sati is wearing: ${equipped.emoji} ${equipped.name}` : 'Nothing equipped yet — deep focus earns cosmetics.'}
+              </p>
+            </div>
+            <span className="text-xl font-bold text-brand-lighter">{focusMins} min</span>
+          </div>
+          {upNext && (
+            <div className="mt-3 mb-3">
+              <div className="flex justify-between text-[11.5px]">
+                <span className="text-muted">Next: {upNext.emoji} {upNext.name}</span>
+                <span className="text-soft">{Math.min(100, Math.round((focusMins / upNext.mins) * 100))}%</span>
+              </div>
+              <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-ink">
+                <div className="h-full rounded-full bg-brand-lighter" style={{ width: `${Math.min(100, (focusMins / upNext.mins) * 100)}%` }} />
+              </div>
+            </div>
+          )}
+          <div className="grid grid-cols-4 gap-2">
+            {UNLOCKS.map((u) => {
+              const isOwned = owned.has(u.id);
+              const isEquipped = equipped?.id === u.id;
+              return (
+                <button
+                  key={u.id}
+                  type="button"
+                  disabled={!isOwned}
+                  onClick={() => updateProfile({ mascot_skin: isEquipped ? 'none' : u.id })}
+                  title={isOwned ? `${u.name} · ${u.mins} min` : `Unlock at ${u.mins} min`}
+                  className={`flex flex-col items-center gap-0.5 rounded-xl px-1 py-2 text-center ring-1 transition ${
+                    isEquipped
+                      ? 'bg-brand-light/25 ring-brand-lighter'
+                      : isOwned
+                        ? 'bg-surface-light ring-surface hover:bg-surface'
+                        : 'bg-surface opacity-40 ring-surface'
+                  }`}
+                >
+                  <span className="text-xl">{isOwned ? u.emoji : '🔒'}</span>
+                  <span className="max-w-full truncate text-[9.5px] font-medium text-body">{isOwned ? u.name : `${u.mins}m`}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Backups */}
         <div className="rounded-xl bg-surface-dark p-4 ring-1 ring-surface">
           <p className="mb-1 font-medium text-white">Data backup</p>
           <p className="mb-3 text-[12px] text-muted">

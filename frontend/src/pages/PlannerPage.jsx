@@ -3,9 +3,18 @@ import { Link } from 'react-router-dom';
 import dayjs from 'dayjs';
 import PageShell from '../components/layout/PageShell';
 import StudyPlanForm from '../components/forms/StudyPlanForm';
+import CrisisForm from '../components/forms/CrisisForm';
 import Modal from '../components/ui/Modal';
+import EnergyModal from '../components/modals/EnergyModal';
+import SyllabusModal from '../components/modals/SyllabusModal';
 import { useApp } from '../store/AppContext';
 import { daysUntil, formatFull, dueLabel, taskStatus, monthCells, LOCAL_DATE, TODAY } from '../lib/utils';
+
+const DIFFICULTY_CHIP = {
+  easy: 'bg-surface-light text-soft',
+  medium: 'bg-warn/15 text-warn-text',
+  hard: 'bg-danger/20 text-danger',
+};
 
 const CONFIDENCE_OPTIONS = [
   { v: 1, label: '💔 Very weak' },
@@ -18,10 +27,13 @@ const CONFIDENCE_OPTIONS = [
 export default function PlannerPage() {
   const {
     tasks, exams, studyPlans, topics, toggleTask, deleteStudyPlan,
-    updateStudyPlan, addTopic, updateTopic,
+    updateStudyPlan, addTopic, updateTopic, energyCheckins,
   } = useApp();
   const [planModal, setPlanModal] = useState(null); // null | { defaultDate }
   const [topicModal, setTopicModal] = useState(null); // null | { subject, chapter, topic }
+  const [crisisExam, setCrisisExam] = useState(null);
+  const [energyOpen, setEnergyOpen] = useState(false);
+  const [syllabusOpen, setSyllabusOpen] = useState(false);
   const [year, setYear] = useState(dayjs().year());
   const [month, setMonth] = useState(dayjs().month());
 
@@ -86,6 +98,39 @@ export default function PlannerPage() {
           <div className="rounded-xl bg-surface-dark p-3 text-center ring-1 ring-surface">
             <div className="text-xl font-bold text-brand-lighter">{open.length}</div>
             <div className="text-[11.5px] text-muted">In progress</div>
+          </div>
+        </div>
+
+        {/* Cognitive battery + imports */}
+        <div className="rounded-xl bg-surface-dark p-4 ring-1 ring-surface">
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <p className="font-medium text-white">🔋 Cognitive battery</p>
+              <p className="text-[12px] text-muted">
+                {energyCheckins.length === 0
+                  ? 'Log a quick check-in to auto-calibrate your day.'
+                  : `${energyCheckins.length} check-in(s) this period · latest ${energyCheckins[0]?.energy_level}/10`}
+              </p>
+            </div>
+            <button type="button" onClick={() => setEnergyOpen(true)} className="btn-primary px-3 py-1.5 text-xs">Log now</button>
+          </div>
+          {energyCheckins.length > 0 && (
+            <div className="mt-3 flex items-end gap-1">
+              {[...energyCheckins].slice(0, 7).reverse().map((c) => (
+                <div key={c.id} className="flex-1 text-center">
+                  <div className="mx-auto mb-1 h-5 w-full overflow-hidden rounded-full bg-ink">
+                    <div
+                      className="h-full rounded-full"
+                      style={{ width: `${c.energy_level * 10}%`, backgroundColor: c.energy_level <= 3 ? 'rgb(var(--danger))' : c.energy_level <= 6 ? 'rgb(var(--warn))' : 'rgb(var(--brand-lighter))' }}
+                    />
+                  </div>
+                  <span className="text-[9.5px] text-muted">{c.energy_level}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="mt-3 flex gap-2">
+            <button type="button" onClick={() => setSyllabusOpen(true)} className="btn-secondary flex-1 py-2 text-xs">📚 Import syllabus</button>
           </div>
         </div>
 
@@ -158,6 +203,9 @@ export default function PlannerPage() {
                   <p className={`truncate text-[14px] ${p.is_done ? 'line-through text-muted' : 'text-white'}`}>{p.task_title}</p>
                   <p className="text-[11.5px] text-muted">📚 {p.subject} · {p.plan_type === 'week' ? 'Weekly' : 'Daily'}</p>
                 </div>
+                <span className={`chip ${DIFFICULTY_CHIP[p.difficulty] || DIFFICULTY_CHIP.medium}`}>
+                  {p.difficulty || 'medium'}
+                </span>
                 <button type="button" onClick={() => setPlanModal({ plan: p, defaultDate: todayStr })} className="text-muted hover:text-white" title="Edit">
                   ✏️
                 </button>
@@ -186,6 +234,14 @@ export default function PlannerPage() {
                     <p className="text-[11.5px] text-muted">{formatFull(e.exam_date)} · {d === 0 ? 'today!' : d === 1 ? 'tomorrow' : `${d} days`}</p>
                   </div>
                   {d <= 7 && <span className="chip bg-warn/15 text-warn-text">soon</span>}
+                  <button
+                    type="button"
+                    onClick={(ev) => { ev.preventDefault(); ev.stopPropagation(); setCrisisExam(e); }}
+                    className="shrink-0 rounded-lg bg-danger/15 px-2 py-1 text-[11px] font-semibold text-danger transition hover:bg-danger/30"
+                    title="Crisis mode — break this exam into micro-tasks"
+                  >
+                    🆘 Crisis
+                  </button>
                 </Link>
               );
             })}
@@ -267,6 +323,12 @@ export default function PlannerPage() {
       )}
 
       {topicModal && <TopicForm onClose={() => setTopicModal(null)} initial={topicModal.topic} />}
+
+      {crisisExam && <CrisisForm subject={crisisExam.subject} examDate={crisisExam.exam_date} onClose={() => setCrisisExam(null)} />}
+
+      {energyOpen && <EnergyModal onClose={() => setEnergyOpen(false)} />}
+
+      {syllabusOpen && <SyllabusModal onClose={() => setSyllabusOpen(false)} />}
     </PageShell>
   );
 }

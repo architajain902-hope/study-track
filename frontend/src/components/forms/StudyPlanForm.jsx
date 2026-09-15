@@ -9,6 +9,7 @@ export default function StudyPlanForm({ onClose, initial, defaultDate }) {
     task_title: initial?.task_title || '',
     plan_date: initial?.plan_date || defaultDate || '',
     plan_type: initial?.plan_type || 'day',
+    difficulty: initial?.difficulty || 'medium',
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -27,6 +28,7 @@ export default function StudyPlanForm({ onClose, initial, defaultDate }) {
         task_title: vals.task_title.trim(),
         plan_date: vals.plan_date || new Date().toISOString().slice(0, 10),
         plan_type: vals.plan_type,
+        difficulty: vals.difficulty,
       };
       if (initial?.id) await updateStudyPlan(initial.id, payload);
       else await addStudyPlan(payload);
@@ -62,12 +64,22 @@ export default function StudyPlanForm({ onClose, initial, defaultDate }) {
           value={vals.task_title}
           onChange={(e) => set('task_title', e.target.value)}
         />
-        <div>
-          <label className="mb-1 block text-[13px] text-muted">Plan type</label>
-          <select className="input-round bg-surface text-white" value={vals.plan_type} onChange={(e) => set('plan_type', e.target.value)}>
-            <option value="day">Daily plan</option>
-            <option value="week">Weekly plan</option>
-          </select>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="mb-1 block text-[13px] text-muted">Plan type</label>
+            <select className="input-round bg-surface text-white" value={vals.plan_type} onChange={(e) => set('plan_type', e.target.value)}>
+              <option value="day">Daily plan</option>
+              <option value="week">Weekly plan</option>
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-[13px] text-muted">Difficulty</label>
+            <select className="input-round bg-surface text-white" value={vals.difficulty} onChange={(e) => set('difficulty', e.target.value)}>
+              <option value="easy">🟢 Easy</option>
+              <option value="medium">🟡 Medium</option>
+              <option value="hard">🔴 Hard</option>
+            </select>
+          </div>
         </div>
         {error && <p className="text-sm text-danger">{error}</p>}
         <div className="flex items-center justify-end gap-2 pt-1">
