@@ -85,19 +85,6 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
-// ── Env diagnostics ───────────────────────────────────────────────────────
-app.get('/api/debug-env', (_req, res) => {
-  res.json({
-    env: envSnapshot,
-    node: process.version,
-    cwd: process.cwd(),
-    pid: process.pid,
-    supabaseReady,
-    supabaseInitError,
-    clientOrigin: CLIENT_ORIGIN,
-  });
-});
-
 // ── Get current user's profile ────────────────────────────────────────────
 app.get('/api/me', authMiddleware, async (req, res) => {
   try {
