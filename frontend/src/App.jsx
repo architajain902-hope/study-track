@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { AppProvider, useApp } from './store/AppContext';
+import { applyEnergyTheme } from './lib/theme';
 import LoginPage from './pages/LoginPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import DashboardPage from './pages/DashboardPage';
@@ -15,6 +17,18 @@ import { useBrowserNotifications } from './lib/useBrowserNotifications';
 
 function NotificationWatcher() {
   useBrowserNotifications();
+  return null;
+}
+
+// Sync ambient energy accents to the student's cognitive battery.
+function EnergyThemeSync() {
+  const { energyCheckins } = useApp();
+  useEffect(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    const check = energyCheckins.find((c) => c.created_at && c.created_at.slice(0, 10) === today);
+    const level = !check ? 'med' : check.energy_level >= 7 ? 'high' : check.energy_level <= 3 ? 'low' : 'med';
+    applyEnergyTheme(level);
+  }, [energyCheckins]);
   return null;
 }
 
@@ -45,6 +59,7 @@ export default function App() {
   return (
     <AppProvider>
       <NotificationWatcher />
+      <EnergyThemeSync />
       <BrowserRouter>
         <Routes>
           <Route

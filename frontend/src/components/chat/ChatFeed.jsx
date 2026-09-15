@@ -1,10 +1,11 @@
-import { useMemo } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../../store/AppContext';
 import TaskBubble from './TaskBubble';
 import ExamBubble from './ExamBubble';
+import ExamTicker from './ExamTicker';
 import { formatDay, sortFeed, dueLabel, daysUntil } from '../../lib/utils';
-import { greeting, MASCOT, welcomeMessage, streakMessage, goalMetMessage, coldStreakMessage, overdueMessage, mascotMood, deadlineWit } from '../../lib/motivation';
+import { greeting, MASCOT, welcomeMessage, streakMessage, goalMetMessage, coldStreakMessage, overdueMessage, mascotMood, adaptiveDeadlineMessage } from '../../lib/motivation';
 import { equippedCosmetic } from '../../lib/unlocks';
 
 function DateSeparator({ label }) {
@@ -57,6 +58,12 @@ export default function ChatFeed({ onAddQuick }) {
 
   const todayEnergy = energyCheckins.find((c) => new Date(c.created_at).toDateString() === new Date().toDateString());
   const examsSoon = exams.some((e) => daysUntil(e.exam_date) >= 0 && daysUntil(e.exam_date) <= 3);
+  const upcomingExams = exams
+    .map((e) => ({ exam: e, days: daysUntil(e.exam_date) }))
+    .filter((x) => x.days >= 0)
+    .sort((a, b) => a.days - b.days);
+  const nearestExam = upcomingExams[0];
+  const examPressure = Boolean(nearestExam && nearestExam.days <= 14);
   const overdueCount = tasks.filter((t) => !t.is_completed && dueLabel(t.due_date).startsWith('Overdue')).length;
   const mood = mascotMood({
     activeStreak,
@@ -67,6 +74,32 @@ export default function ChatFeed({ onAddQuick }) {
   });
   const cosmetic = equippedCosmetic(profile);
   const wiggle = examsSoon ? 'animate-bounce' : '';
+
+  const feedRef = useRef(null);
+  const mascotRef = useRef(null);
+
+  useEffect(() => {
+    const el = feedRef.current;
+    if (!el) return;
+    let raf = null;
+    const onMove = (e) => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = null;
+        const m = mascotRef.current;
+        if (!m) return;
+        const r = m.getBoundingClientRect();
+        const dx = Math.max(-10, Math.min(10, (e.clientX - (r.left + r.width / 2)) / 22));
+        const dy = Math.max(-8, Math.min(8, (e.clientY - (r.top + r.height / 2)) / 22));
+        m.style.transform = `translate(${dx}px, ${dy}px)`;
+      });
+    };
+    el.addEventListener('pointermove', onMove);
+    return () => {
+      el.removeEventListener('pointermove', onMove);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
 
   const feed = useMemo(() => {
     const items = [
@@ -105,15 +138,18 @@ export default function ChatFeed({ onAddQuick }) {
   }
 
   return (
-    <div className="min-h-full bg-chat-pattern px-3 py-3 pb-6">
+    <div ref={feedRef} className="min-h-full bg-chat-pattern px-3 py-3 pb-6">
+      <ExamTicker exams={exams} />
       <div className="mb-3 flex items-end gap-2">
-        <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-lighter to-brand text-xl shadow-bubble">
-          <span className={`${wiggle}`}>{mood.face}</span>
-          {cosmetic && (
-            <span className="absolute -right-1 -top-1 rounded-full bg-surface-dark px-1 text-[11px] ring-1 ring-surface" title={cosmetic.name}>
-              {cosmetic.emoji}
-            </span>
-          )}
+        <div ref={mascotRef} className="mascot-follow group relative z-10 h-11 w-11 shrink-0">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-brand-lighter to-brand text-xl shadow-bubble transition-transform duration-300 group-hover:scale-110">
+            <span className={`${wiggle}`}>{mood.face}</span>
+            {cosmetic && (
+              <span className="absolute -right-1 -top-1 rounded-full bg-surface-dark px-1 text-[11px] ring-1 ring-surface" title={cosmetic.name}>
+                {cosmetic.emoji}
+              </span>
+            )}
+          </div>
         </div>
         <div className="bubble bubble-in max-w-[75%]">
           <p className="text-[13.5px] leading-snug">
@@ -127,9 +163,9 @@ export default function ChatFeed({ onAddQuick }) {
         <b>{mood.label}:</b> {mood.message}
       </SystemMessage>
 
-      {examsSoon && (
+      {examPressure && nearestExam && (
         <div className="mt-2">
-          <SystemMessage>🗓 {deadlineWit(exams.find((e) => daysUntil(e.exam_date) >= 0 && daysUntil(e.exam_date) <= 3).subject, daysUntil(exams.find((e) => daysUntil(e.exam_date) >= 0 && daysUntil(e.exam_date) <= 3).exam_date))}</SystemMessage>
+          <SystemMessage>🗓 {adaptiveDeadlineMessage(nearestExam.exam)}</SystemMessage>
         </div>
       )}
 

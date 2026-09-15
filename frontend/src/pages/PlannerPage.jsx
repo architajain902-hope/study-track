@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import dayjs from 'dayjs';
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import PageShell from '../components/layout/PageShell';
 import StudyPlanForm from '../components/forms/StudyPlanForm';
 import CrisisForm from '../components/forms/CrisisForm';
 import Modal from '../components/ui/Modal';
 import EnergyModal from '../components/modals/EnergyModal';
 import SyllabusModal from '../components/modals/SyllabusModal';
+import ExamTicker from '../components/chat/ExamTicker';
 import { useApp } from '../store/AppContext';
 import { daysUntil, formatFull, dueLabel, taskStatus, monthCells, LOCAL_DATE, TODAY } from '../lib/utils';
 
@@ -82,27 +84,50 @@ export default function PlannerPage() {
 
   const weakTopics = topics.filter((t) => t.confidence <= 2);
 
+  // To-do list ordered by priority → due date → created, so priority edits in
+  // the task page re-sort the list live (with a springy layout animation).
+  const sortedTasks = useMemo(
+    () =>
+      [...tasks].sort((a, b) => {
+        const pa = a.priority || 2;
+        const pb = b.priority || 2;
+        if (pa !== pb) return pa - pb;
+        const da = a.due_date || '9999-12-31';
+        const db = b.due_date || '9999-12-31';
+        if (da !== db) return da < db ? -1 : 1;
+        return a.created_at < b.created_at ? -1 : 1;
+      }),
+    [tasks]
+  );
+
+  const weekPlans = studyPlans.filter(
+    (p) => !p.is_done && p.plan_date >= todayStr && p.plan_date < dayjs().add(7, 'day').format('YYYY-MM-DD')
+  ).length;
+
+  const futureExams = exams.filter((e) => daysUntil(e.exam_date) >= 0);
+  const fastApproaching = futureExams.filter((e) => daysUntil(e.exam_date) <= 14).length;
+  const nearestExam = futureExams.sort((a, b) => daysUntil(a.exam_date) - daysUntil(b.exam_date))[0];
+
   return (
     <PageShell title="Planner" subtitle="Your academic command centre">
-      <div className="px-4 py-4 space-y-5 animate-pop">
+      <ExamTicker exams={exams} />
+      <div className="grid grid-cols-1 gap-3 px-4 py-4 sm:grid-cols-2 lg:grid-cols-6 animate-pop">
         {/* Quick overview */}
-        <div className="grid grid-cols-3 gap-3">
-          <Link to="/task/" className="rounded-xl bg-surface-dark p-3 text-center ring-1 ring-surface">
-            <div className="text-xl font-bold text-danger">{overdue.length}</div>
-            <div className="text-[11.5px] text-muted">Overdue</div>
-          </Link>
-          <div className="rounded-xl bg-surface-dark p-3 text-center ring-1 ring-surface">
-            <div className="text-xl font-bold text-warn-text">{dueToday.length}</div>
-            <div className="text-[11.5px] text-muted">Due today</div>
-          </div>
-          <div className="rounded-xl bg-surface-dark p-3 text-center ring-1 ring-surface">
-            <div className="text-xl font-bold text-brand-lighter">{open.length}</div>
-            <div className="text-[11.5px] text-muted">In progress</div>
-          </div>
+        <Link to="/task/" className="col-span-1 rounded-xl bg-surface-dark p-4 text-center ring-1 ring-surface transition hover:bg-surface sm:col-span-1 lg:col-span-2">
+          <div className={`text-2xl font-bold ${overdue.length ? 'glow-danger text-danger' : 'text-muted'}`}>{overdue.length}</div>
+          <div className="text-[11.5px] text-muted">Overdue</div>
+        </Link>
+        <div className="col-span-1 rounded-xl bg-surface-dark p-4 text-center ring-1 ring-surface sm:col-span-1 lg:col-span-2">
+          <div className={`text-2xl font-bold ${dueToday.length ? 'glow-warn text-warn-text' : 'text-muted'}`}>{dueToday.length}</div>
+          <div className="text-[11.5px] text-muted">Due today</div>
+        </div>
+        <div className="col-span-1 rounded-xl bg-surface-dark p-4 text-center ring-1 ring-surface sm:col-span-1 lg:col-span-2">
+          <div className="text-2xl font-bold text-brand-lighter">{open.length}</div>
+          <div className="text-[11.5px] text-muted">In progress</div>
         </div>
 
         {/* Cognitive battery + imports */}
-        <div className="rounded-xl bg-surface-dark p-4 ring-1 ring-surface">
+        <div className="col-span-1 rounded-xl bg-surface-dark p-4 ring-1 ring-surface sm:col-span-2 lg:col-span-4">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
               <p className="font-medium text-white">🔋 Cognitive battery</p>
@@ -134,8 +159,32 @@ export default function PlannerPage() {
           </div>
         </div>
 
+        {/* This week — mini pulse */}
+        <div className="col-span-1 rounded-xl bg-surface-dark p-4 ring-1 ring-surface sm:col-span-2 lg:col-span-2">
+          <p className="font-medium text-white">This week</p>
+          <div className="mt-3 space-y-2 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-muted">Study slots</span>
+              <span className="font-semibold text-brand-lighter">{weekPlans}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted">Exams ≤ 14d</span>
+              <span className={`font-semibold ${fastApproaching ? 'text-warn-text' : 'text-muted'}`}>{fastApproaching}</span>
+            </div>
+            {nearestExam && (
+              <button
+                type="button"
+                onClick={() => setCrisisExam(nearestExam)}
+                className="mt-1 w-full rounded-lg bg-danger/15 px-2 py-1.5 text-xs font-semibold text-danger transition hover:bg-danger/30"
+              >
+                🆘 Crisp it: {nearestExam.subject} ({daysUntil(nearestExam.exam_date)}d)
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Academic calendar */}
-        <div className="rounded-xl bg-surface-dark p-4 ring-1 ring-surface">
+        <div className="col-span-1 rounded-xl bg-surface-dark p-4 ring-1 ring-surface sm:col-span-2 lg:col-span-4">
           <div className="mb-2 flex items-center justify-between">
             <p className="font-medium text-white">Academic calendar</p>
             <div className="flex items-center gap-1">
@@ -173,8 +222,39 @@ export default function PlannerPage() {
           </div>
         </div>
 
+        {/* Exam schedule */}
+        <div className="col-span-1 rounded-xl bg-surface-dark p-4 ring-1 ring-surface sm:col-span-2 lg:col-span-2">
+          <p className="mb-3 font-medium text-white">Exam schedule</p>
+          {upcomingExams.length === 0 && <p className="text-[13px] text-muted">No exams yet. Add one from the chat (📝) or <Link to="/exam" className="text-brand-lighter">here</Link>.</p>}
+          <div className="space-y-2">
+            {upcomingExams.map((e) => {
+              const d = daysUntil(e.exam_date);
+              return (
+                <Link to={`/exam/${e.id}`} key={e.id} className="flex items-center gap-3 rounded-lg bg-surface px-3 py-2.5 transition hover:bg-surface-light">
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold ${d <= 3 ? 'glow-danger bg-danger/20 text-danger' : 'bg-surface-light text-soft'}`}>
+                    {d}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium text-white">{e.subject}</p>
+                    <p className="text-[11.5px] text-muted">{formatFull(e.exam_date)} · {d === 0 ? 'today!' : d === 1 ? 'tomorrow' : `${d} days`}</p>
+                  </div>
+                  {d <= 7 && <span className="chip glow-warn bg-warn/15 text-warn-text">soon</span>}
+                  <button
+                    type="button"
+                    onClick={(ev) => { ev.preventDefault(); ev.stopPropagation(); setCrisisExam(e); }}
+                    className="shrink-0 rounded-lg bg-danger/15 px-2 py-1 text-[11px] font-semibold text-danger transition hover:bg-danger/30"
+                    title="Crisis mode — break this exam into micro-tasks"
+                  >
+                    🆘
+                  </button>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Plan my day */}
-        <div className="rounded-xl bg-surface-dark p-4 ring-1 ring-surface">
+        <div className="col-span-1 rounded-xl bg-surface-dark p-4 ring-1 ring-surface sm:col-span-2 lg:col-span-3">
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium text-white">Plan my day 🎯</p>
@@ -184,107 +264,52 @@ export default function PlannerPage() {
           </div>
           <div className="mt-3 space-y-2">
             {plansForToday.length === 0 && <p className="text-[13px] text-muted">No study slots yet. Add one, or visit the chat to drop a task.</p>}
-            {plansForToday.map((p) => (
-              <div key={p.id} className="flex items-center gap-2 rounded-lg bg-surface px-3 py-2">
-                <button
-                  type="button"
-                  onClick={() => togglePlan(p)}
-                  className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition ${
-                    p.is_done ? 'border-brand-lighter bg-brand-lighter text-onbrand' : 'border-muted'
-                  }`}
+            <AnimatePresence initial={false}>
+              {plansForToday.map((p) => (
+                <motion.div
+                  key={p.id}
+                  layout
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ type: 'spring', stiffness: 380, damping: 34 }}
                 >
-                  {p.is_done && (
-                    <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M20 6 9 17l-5-5" />
-                    </svg>
-                  )}
-                </button>
-                <div className="min-w-0 flex-1">
-                  <p className={`truncate text-[14px] ${p.is_done ? 'line-through text-muted' : 'text-white'}`}>{p.task_title}</p>
-                  <p className="text-[11.5px] text-muted">📚 {p.subject} · {p.plan_type === 'week' ? 'Weekly' : 'Daily'}</p>
-                </div>
-                <span className={`chip ${DIFFICULTY_CHIP[p.difficulty] || DIFFICULTY_CHIP.medium}`}>
-                  {p.difficulty || 'medium'}
-                </span>
-                <button type="button" onClick={() => setPlanModal({ plan: p, defaultDate: todayStr })} className="text-muted hover:text-white" title="Edit">
-                  ✏️
-                </button>
-                <button type="button" onClick={() => deleteStudyPlan(p.id)} className="text-muted hover:text-danger" title="Delete">
-                  🗑️
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Exam schedule & todo list */}
-        <div className="rounded-xl bg-surface-dark p-4 ring-1 ring-surface">
-          <p className="mb-3 font-medium text-white">Exam schedule</p>
-          {upcomingExams.length === 0 && <p className="text-[13px] text-muted">No exams yet. Add one from the chat (📝) or <Link to="/exam" className="text-brand-lighter">here</Link>.</p>}
-          <div className="space-y-2">
-            {upcomingExams.map((e) => {
-              const d = daysUntil(e.exam_date);
-              return (
-                <Link to={`/exam/${e.id}`} key={e.id} className="flex items-center gap-3 rounded-lg bg-surface px-3 py-2.5 transition hover:bg-surface-light">
-                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold ${d <= 3 ? 'bg-danger/20 text-danger' : 'bg-surface-light text-soft'}`}>
-                    {d}
+                  <div className="flex items-center gap-2 rounded-lg bg-surface px-3 py-2">
+                    <button
+                      type="button"
+                      onClick={() => togglePlan(p)}
+                      className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition ${
+                        p.is_done ? 'border-brand-lighter bg-brand-lighter text-onbrand' : 'border-muted'
+                      }`}
+                    >
+                      {p.is_done && (
+                        <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M20 6 9 17l-5-5" />
+                        </svg>
+                      )}
+                    </button>
+                    <div className="min-w-0 flex-1">
+                      <p className={`truncate text-[14px] ${p.is_done ? 'line-through text-muted' : 'text-white'}`}>{p.task_title}</p>
+                      <p className="text-[11.5px] text-muted">📚 {p.subject} · {p.plan_type === 'week' ? 'Weekly' : 'Daily'}</p>
+                    </div>
+                    <span className={`chip ${DIFFICULTY_CHIP[p.difficulty] || DIFFICULTY_CHIP.medium}`}>
+                      {p.difficulty || 'medium'}
+                    </span>
+                    <button type="button" onClick={() => setPlanModal({ plan: p, defaultDate: todayStr })} className="text-muted hover:text-white" title="Edit">
+                      ✏️
+                    </button>
+                    <button type="button" onClick={() => deleteStudyPlan(p.id)} className="text-muted hover:text-danger" title="Delete">
+                      🗑️
+                    </button>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium text-white">{e.subject}</p>
-                    <p className="text-[11.5px] text-muted">{formatFull(e.exam_date)} · {d === 0 ? 'today!' : d === 1 ? 'tomorrow' : `${d} days`}</p>
-                  </div>
-                  {d <= 7 && <span className="chip bg-warn/15 text-warn-text">soon</span>}
-                  <button
-                    type="button"
-                    onClick={(ev) => { ev.preventDefault(); ev.stopPropagation(); setCrisisExam(e); }}
-                    className="shrink-0 rounded-lg bg-danger/15 px-2 py-1 text-[11px] font-semibold text-danger transition hover:bg-danger/30"
-                    title="Crisis mode — break this exam into micro-tasks"
-                  >
-                    🆘 Crisis
-                  </button>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* To-do list with status toggles */}
-        <div className="rounded-xl bg-surface-dark p-4 ring-1 ring-surface">
-          <p className="mb-3 font-medium text-white">My to-do list</p>
-          <div className="space-y-1.5">
-            {tasks.length === 0 && <p className="text-[13px] text-muted">Nothing here yet. Add tasks from the chat with “/task <b>title</b>”.</p>}
-            {tasks.map((t) => {
-              const st = taskStatus(t);
-              return (
-                <Link to={`/task/${t.id}`} key={t.id} className="flex items-center gap-2.5 rounded-lg bg-surface px-3 py-2 transition hover:bg-surface-light">
-                  <button
-                    type="button"
-                    onClick={(ev) => { ev.preventDefault(); ev.stopPropagation(); toggleTask(t); }}
-                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition ${
-                      t.is_completed ? 'border-brand-lighter bg-brand-lighter text-onbrand' : 'border-muted'
-                    }`}
-                  >
-                    {t.is_completed && (
-                      <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M20 6 9 17l-5-5" />
-                      </svg>
-                    )}
-                  </button>
-                  <div className="min-w-0 flex-1">
-                    <p className={`truncate text-[14px] ${t.is_completed ? 'line-through text-muted' : 'text-white'}`}>{t.title}</p>
-                    <p className="text-[11.5px] text-muted">
-                      {t.subject ? `${t.subject} · ` : ''}{st.label}
-                      {t.due_date && !t.is_completed ? ` · ${dueLabel(t.due_date)}` : ''}
-                    </p>
-                  </div>
-                </Link>
-              );
-            })}
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </div>
 
         {/* Topic confidence tracker */}
-        <div className="rounded-xl bg-surface-dark p-4 ring-1 ring-surface">
+        <div className="col-span-1 rounded-xl bg-surface-dark p-4 ring-1 ring-surface sm:col-span-2 lg:col-span-3">
           <p className="mb-3 font-medium text-white">Topic confidence (weak → strong)</p>
           <button type="button" onClick={() => setTopicModal({})} className="mb-3 btn-secondary px-3 py-1.5 text-xs">+ Track a topic</button>
           <div className="space-y-2">
@@ -310,6 +335,55 @@ export default function PlannerPage() {
                 <button type="button" onClick={() => setTopicModal({ topic: t })} className="text-muted hover:text-white" title="Edit">✏️</button>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* To-do list with status toggles */}
+        <div className="col-span-1 rounded-xl bg-surface-dark p-4 ring-1 ring-surface sm:col-span-2 lg:col-span-6">
+          <p className="mb-3 font-medium text-white">My to-do list</p>
+          <div className="space-y-1.5">
+            {tasks.length === 0 && <p className="text-[13px] text-muted">Nothing here yet. Add tasks from the chat with “/task <b>title</b>”.</p>}
+            <LayoutGroup>
+              <AnimatePresence initial={false}>
+                {sortedTasks.map((t) => {
+                  const st = taskStatus(t);
+                  return (
+                    <motion.div
+                      key={t.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.96 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.96 }}
+                      transition={{ type: 'spring', stiffness: 380, damping: 34 }}
+                    >
+                      <Link to={`/task/${t.id}`} className="flex items-center gap-2.5 rounded-lg bg-surface px-3 py-2 transition hover:bg-surface-light">
+                        <button
+                          type="button"
+                          onClick={(ev) => { ev.preventDefault(); ev.stopPropagation(); toggleTask(t); }}
+                          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition ${
+                            t.is_completed ? 'border-brand-lighter bg-brand-lighter text-onbrand' : 'border-muted'
+                          }`}
+                        >
+                          {t.is_completed && (
+                            <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M20 6 9 17l-5-5" />
+                            </svg>
+                          )}
+                        </button>
+                        <div className="min-w-0 flex-1">
+                          <p className={`truncate text-[14px] ${t.is_completed ? 'line-through text-muted' : 'text-white'}`}>{t.title}</p>
+                          <p className="text-[11.5px] text-muted">
+                            {t.subject ? `${t.subject} · ` : ''}{st.label}
+                            {t.due_date && !t.is_completed ? ` · ${dueLabel(t.due_date)}` : ''}
+                          </p>
+                        </div>
+                        {t.priority === 1 && !t.is_completed && <span className="chip bg-danger/15 text-danger">high</span>}
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </LayoutGroup>
           </div>
         </div>
       </div>

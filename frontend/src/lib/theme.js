@@ -21,6 +21,13 @@ export function applyTheme(theme) {
   }
 }
 
+// Ambient energy themes — shift UI accents to match the student's cognitive
+// battery: 'high' (vibrant), 'med' (compact), 'low' (calm, soft tones).
+export function applyEnergyTheme(level = 'med') {
+  const lvl = level === 'high' || level === 'low' ? level : 'med';
+  document.documentElement.setAttribute('data-energy', lvl);
+}
+
 export function useTheme() {
   const [theme, setTheme] = useState(getInitialTheme);
 

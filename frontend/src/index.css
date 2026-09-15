@@ -70,6 +70,32 @@ html[data-theme='light'] {
   --scrollbar: rgba(110, 106, 94, 0.35);
 }
 
+/* ============================================================
+   Ambient energy themes — accent shifts by cognitive battery.
+   Higher specificity than theme blocks so they win per-var.
+   ============================================================ */
+html[data-energy='low'] {
+  --brand: 15 78 92;
+  --brand-light: 34 115 138;
+  --brand-lighter: 122 178 202;
+  --brand-fade: 190 222 233;
+  --accent: 88 152 182;
+  --warn: 210 178 124;
+  --warn-text: 226 202 154;
+  --warn-muted: 196 172 118;
+  --danger: 205 122 132;
+}
+
+html[data-energy='high'] {
+  --brand: 6 122 92;
+  --brand-light: 26 196 146;
+  --brand-lighter: 72 232 126;
+  --brand-fade: 190 250 205;
+  --accent: 0 234 162;
+  --warn: 255 186 80;
+  --warn-text: 255 226 150;
+}
+
 html,
 body,
 #root {
@@ -155,4 +181,55 @@ body {
 }
 .animate-pop {
   animation: pop-in 0.25s ease-out;
+}
+
+/* Ticker tape — seamless exam countdown marquee */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-marquee {
+  animation: marquee 26s linear infinite;
+}
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Glow badge accents — upgrade Phase B3 status markers */
+.glow-danger {
+  box-shadow: 0 0 10px 0 rgba(241, 92, 109, 0.5), 0 0 2px 1px rgba(241, 92, 109, 0.6);
+}
+.glow-warn {
+  box-shadow: 0 0 10px 0 rgba(255, 190, 92, 0.45), 0 0 2px 1px rgba(255, 190, 92, 0.55);
+}
+.glow-brand {
+  box-shadow: 0 0 10px 0 rgba(37, 211, 102, 0.4), 0 0 2px 1px rgba(37, 211, 102, 0.5);
+}
+
+/* Glassmorphism panels */
+.glass-overlay {
+  background: rgba(8, 12, 15, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+html[data-theme='light'] .glass-overlay {
+  background: rgba(58, 50, 40, 0.35);
+}
+.glass-panel {
+  background: rgba(17, 27, 33, 0.82);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+html[data-theme='light'] .glass-panel {
+  background: rgba(250, 245, 238, 0.85);
+}
+
+/* Mascot cursor-follow smoothing */
+.mascot-follow {
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
 }

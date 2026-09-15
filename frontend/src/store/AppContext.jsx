@@ -2,8 +2,17 @@ import { createContext, useContext, useEffect, useMemo, useState, useCallback } 
 import { supabase, API_URL } from '../lib/supabase';
 import { kolkataDateStr, kolkataYesterdayStr, kolkataDayStartISO } from '../lib/utils';
 import dayjs from 'dayjs';
+import confetti from 'canvas-confetti';
 
 const AppContext = createContext(null);
+
+function burstConfetti() {
+  try {
+    confetti({ particleCount: 70, spread: 65, startVelocity: 34, origin: { y: 0.7 }, zIndex: 9999 });
+  } catch {
+    /* confetti is best-effort */
+  }
+}
 
 export function useApp() {
   const ctx = useContext(AppContext);
@@ -293,6 +302,7 @@ export function AppProvider({ children }) {
         const { error } = await supabase.from('tasks').update(patch).eq('id', task.id);
         if (error) throw error;
         if (completing) {
+          burstConfetti();
           try { await commitStreak(); } catch { /* streak is best-effort */ }
         }
         await loadTasks(userId);

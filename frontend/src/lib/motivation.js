@@ -1,4 +1,4 @@
-import { greeting } from './utils';
+import { greeting, daysUntil } from './utils';
 
 const MASCOT = 'Sati 🦉';
 
@@ -127,6 +127,41 @@ const DEADLINE_WIT = [
 
 export function deadlineWit(subject, days) {
   return pick(DEADLINE_WIT)(subject, days);
+}
+
+// Adaptive deadline prompts — intensity scales with proximity and adapts the
+// intervention (panic-mode → drills → cadence) plus a weak-topic hook.
+const DEADLINE_TIERS = [
+  {
+    max: 2,
+    lines: [
+      (s) => `${s} lands in 48 hours or less. Emergency mode: hydrate, pick your 3 likeliest questions, tiny focus blocks. I'm your co-pilot. 🛩️`,
+      (s) => `Under two days to ${s}. Forget 'relax' — we run 'focus in gear'. One mock, then fix what leaks.`,
+      (s) => `${s} is knocking on the door. Turn the panic into a checklist of small wins — respond, don't react.`,
+    ],
+  },
+  {
+    max: 7,
+    lines: [
+      (s) => `${s} is a week out. One chapter a day plus one past-paper and you walk in calm. I'll count with you.`,
+      (s) => `One week to ${s} — the perfect distance for mock runs. No more excuses, just drills.`,
+    ],
+  },
+  {
+    max: 14,
+    lines: [
+      (s) => `${s}? Two weeks is a luxury. Build the cadence now and revision almost does itself.`,
+      (s) => `Early bird for ${s}. Set the rhythm this week so exam week feels like a lap, not a sprint.`,
+    ],
+  },
+];
+
+export function adaptiveDeadlineMessage(exam, weakTopic) {
+  const days = Math.max(0, Math.round(daysUntil(exam.exam_date) || 0));
+  const tier = DEADLINE_TIERS.find((t) => days <= t.max) || DEADLINE_TIERS[DEADLINE_TIERS.length - 1];
+  let line = pick(tier.lines)(exam.subject);
+  if (weakTopic) line += ` Start with ${weakTopic} — the charts say that's where marks leak.`;
+  return line;
 }
 
 const LOW_ENERGY_REST = [

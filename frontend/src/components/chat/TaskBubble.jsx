@@ -25,7 +25,7 @@ export default function TaskBubble({ task, senderName = 'You' }) {
     <div className="flex flex-col items-start animate-pop">
       <span className="mb-1 pl-1 text-[13px] text-muted">{senderName}</span>
       <div className={`bubble bubble-in w-full cursor-pointer border-l-4 ${meta.ring} ${
-                status.key === 'overdue' ? 'ring-1 ring-danger/60' : status.key === 'due-today' ? 'ring-1 ring-warn/50' : ''
+                status.key === 'overdue' ? 'glow-danger ring-1 ring-danger/60' : status.key === 'due-today' ? 'glow-warn ring-1 ring-warn/50' : ''
               } ${task.is_completed ? 'opacity-60' : ''}`}>
         <button type="button" onClick={() => navigate(`/task/${task.id}`)} className="block w-full text-left">
           <div className="flex items-start gap-2">
@@ -68,7 +68,7 @@ export default function TaskBubble({ task, senderName = 'You' }) {
             {meta.label}
           </span>
           <span className="flex items-center gap-2">
-            <span className={`chip ${status.key === 'completed' ? 'bg-brand-light/25 text-brand-lighter' : status.key === 'overdue' ? 'bg-danger/20 text-danger' : 'bg-surface-light text-soft'}`}>
+            <span className={`chip ${status.key === 'completed' ? 'glow-brand bg-brand-light/25 text-brand-lighter' : status.key === 'overdue' ? 'glow-danger bg-danger/20 text-danger' : 'bg-surface-light text-soft'}`}>
               {status.label}
             </span>
             <span className="text-[11px] text-muted">{formatTime(task.created_at)}</span>
