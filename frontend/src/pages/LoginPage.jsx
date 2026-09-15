@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useApp } from '../store/AppContext';
+import { useLocation, Link } from 'react-router-dom';
 import { validateEmail, validatePassword, greeting } from '../lib/utils';
 
 export default function LoginPage() {
   const { login, signup } = useApp();
+  const location = useLocation();
   const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -11,6 +13,10 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
+
+  useEffect(() => {
+    if (location.state?.notice) setNotice(location.state.notice);
+  }, [location.state]);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -95,6 +101,13 @@ export default function LoginPage() {
               autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
               required
             />
+            {mode === 'login' && (
+              <div className="text-right">
+                <Link to="/reset-password" className="text-xs text-brand-lighter hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
+            )}
             {error && (
               <p className="rounded-lg bg-danger/15 px-3 py-2 text-sm text-danger">{error}</p>
             )}

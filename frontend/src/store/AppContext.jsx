@@ -189,6 +189,11 @@ export function AppProvider({ children }) {
       signup: (email, password, fullName) =>
         supabase.auth.signUp({ email, password, options: { data: { full_name: fullName } } }),
       logout: () => supabase.auth.signOut(),
+      requestPasswordReset: (email) =>
+        supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        }),
+      updatePassword: (password) => supabase.auth.updateUser({ password }),
       addTask: async (payload) => {
         const { data, error } = await supabase
           .from('tasks')
