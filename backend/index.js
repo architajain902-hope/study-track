@@ -12,9 +12,15 @@ const anonKey    = process.env.SUPABASE_ANON_KEY;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !anonKey || !serviceKey) {
-  console.error('Missing SUPABASE_URL, SUPABASE_ANON_KEY, or SUPABASE_SERVICE_ROLE_KEY in .env');
-  process.exit(1);
+  console.error('[backend] missing env', {
+    SUPABASE_URL: !!process.env.SUPABASE_URL,
+    SUPABASE_ANON_KEY: !!process.env.SUPABASE_ANON_KEY,
+    SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    VERCEL: !!process.env.VERCEL,
+  });
+  throw new Error('Missing SUPABASE_URL, SUPABASE_ANON_KEY, or SUPABASE_SERVICE_ROLE_KEY in .env');
 }
+console.error('[backend] env OK', !!process.env.SUPABASE_URL, !!process.env.SUPABASE_ANON_KEY, !!process.env.SUPABASE_SERVICE_ROLE_KEY, 'vercel=' + !!process.env.VERCEL);
 
 // Service-role client — full DB access, bypasses RLS. Server-side use only.
 export const supabaseAdmin = createClient(supabaseUrl, serviceKey);
