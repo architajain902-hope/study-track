@@ -41,8 +41,8 @@ export default function Composer({ onAddTask, onAddExam }) {
         </svg>
       </button>
       <input
-        className="flex-1"
-        placeholder="Type a task or /task …"
+        className="flex-1 bg-transparent text-[var(--text)] placeholder-[var(--text-muted)] outline-none"
+        placeholder="Write a task, or /task Study calculus…"
         value={text}
         onChange={(e) => setText(e.target.value)}
       />

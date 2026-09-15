@@ -82,6 +82,26 @@ export function isOverdue(t) {
   return dayjs().isAfter(dayjs(t));
 }
 
+// Status of a task for the completed / pending / overdue system.
+// Returns { key: 'completed' | 'overdue' | 'pending', label, tone }
+export function taskStatus(task) {
+  if (task.is_completed) return { key: 'completed', label: '✓ Completed' };
+  if (task.due_date && dayjs().isAfter(dayjs(task.due_date))) return { key: 'overdue', label: '❗ Overdue' };
+  if (task.due_date) {
+    const diff = dayjs(task.due_date).startOf('day').diff(dayjs().startOf('day'), 'day');
+    if (diff === 0) return { key: 'due-today', label: '⚡ Due today' };
+    return { key: 'pending', label: `• In ${diff}d` };
+  }
+  return { key: 'pending', label: '• No due date' };
+}
+
+export function formatDuration(seconds) {
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  if (hrs > 0) return `${hrs}h ${mins}m`;
+  return `${mins}m`;
+}
+
 export function daysAgoLabel(dateStr) {
   const diff = dayjs().startOf('day').diff(dayjs(dateStr).startOf('day'), 'day');
   if (diff === 0) return 'Today';

@@ -31,6 +31,28 @@ export default function AppHeader({ title, subtitle }) {
         )}
         <button
           type="button"
+          onClick={() => navigate('/calendar')}
+          className="flex h-9 w-9 items-center justify-center rounded-full text-soft hover:bg-surface"
+          title="Calendar"
+        >
+          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <path d="M16 2v4M8 2v4M3 10h18" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate('/focus')}
+          className="flex h-9 w-9 items-center justify-center rounded-full text-soft hover:bg-surface"
+          title="Focus timer"
+        >
+          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="13" r="8" />
+            <path d="M12 9v4l2.5 2.5M9 2h6" />
+          </svg>
+        </button>
+        <button
+          type="button"
           onClick={() => navigate('/stats')}
           className="flex h-9 w-9 items-center justify-center rounded-full text-soft hover:bg-surface"
           title="Streaks & stats"

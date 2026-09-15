@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { useApp } from '../../store/AppContext';
 import TaskBubble from './TaskBubble';
 import ExamBubble from './ExamBubble';
-import { formatDay, sortFeed, dueLabel, daysUntil, greeting } from '../../lib/utils';
+import { formatDay, sortFeed, dueLabel, daysUntil } from '../../lib/utils';
+import { greeting, MASCOT, welcomeMessage, streakMessage, goalMetMessage, coldStreakMessage, overdueMessage } from '../../lib/motivation';
 
 function DateSeparator({ label }) {
   return (
@@ -51,7 +52,7 @@ function NotificationsBar({ notifications }) {
 }
 
 export default function ChatFeed({ onAddQuick }) {
-  const { tasks, exams, streak, activeStreak, daily, notifications } = useApp();
+  const { tasks, exams, streak, activeStreak, daily, notifications, profile } = useApp();
 
   const feed = useMemo(() => {
     const items = [
@@ -74,11 +75,11 @@ export default function ChatFeed({ onAddQuick }) {
   if (tasks.length === 0 && exams.length === 0) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center animate-pop">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-dark text-3xl ring-1 ring-surface">💬</div>
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-dark text-3xl ring-1 ring-surface">🦉</div>
         <div>
-          <h2 className="text-lg font-semibold text-white">{greeting()}! Your board is empty.</h2>
+          <h2 className="text-lg font-semibold text-white">{greeting()}! I'm {MASCOT}.</h2>
           <p className="mt-1 text-sm text-muted">
-            This chat is your planner. Add a task or an exam and it will show up right here.
+            This chat is your planner. Tell me a task, add an exam, or plan a study session — it'll all show up right here.
           </p>
         </div>
         <div className="flex flex-wrap justify-center gap-2">
@@ -91,23 +92,45 @@ export default function ChatFeed({ onAddQuick }) {
 
   return (
     <div className="min-h-full bg-chat-pattern px-3 py-3 pb-6">
+      <div className="mb-3 flex items-end gap-2">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-lighter to-brand text-base shadow-bubble">
+          🦉
+        </div>
+        <div className="bubble bubble-in max-w-[75%]">
+          <p className="text-[13.5px] leading-snug">
+            <b>{MASCOT}</b> — {welcomeMessage(profile?.full_name)}
+          </p>
+          <p className="mt-1 text-[12px] text-muted">{greeting()}! I'm your study buddy. Tell me a task, an exam, or a plan and I'll keep you on track. 🌱</p>
+        </div>
+      </div>
+
       <SystemMessage>
         🎯 Daily goal: <b>{daily.completed}</b>/{daily.goal} tasks done today
       </SystemMessage>
 
+      {daily.completed >= daily.goal && daily.goal > 0 && (
+        <div className="mt-2">
+          <SystemMessage>{goalMetMessage()} 🎉</SystemMessage>
+        </div>
+      )}
+
       {activeStreak > 0 && (
         <div className="mt-2">
           <SystemMessage>
-            🔥 You're on a <b>{activeStreak}-day</b> streak{streak?.best_streak > activeStreak ? ` (best ${streak.best_streak})` : ''}. Keep it up!
+            🔥 {streakMessage()} <b>{activeStreak}-day</b> streak{streak?.best_streak > activeStreak ? ` (best ${streak.best_streak})` : ''}.
           </SystemMessage>
         </div>
       )}
 
       {activeStreak === 0 && streak?.current_streak > 0 && (
         <div className="mt-2">
-          <SystemMessage>
-            😴 Streak went cold. Complete a task today to start a new one.
-          </SystemMessage>
+          <SystemMessage>😴 {coldStreakMessage()}</SystemMessage>
+        </div>
+      )}
+
+      {tasks.some((t) => !t.is_completed && dueLabel(t.due_date).startsWith('Overdue')) && (
+        <div className="mt-2">
+          <SystemMessage>⏳ {overdueMessage()}</SystemMessage>
         </div>
       )}
 

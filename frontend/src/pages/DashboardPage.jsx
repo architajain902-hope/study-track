@@ -16,8 +16,8 @@ export default function DashboardPage() {
 
   return (
     <PageShell
-      title="ChatPlanner"
-      subtitle={activeStreak > 0 ? `🔥 ${activeStreak}-day streak` : 'Your study board'}
+      title="SatiStudy"
+      subtitle={activeStreak > 0 ? `🔥 ${activeStreak}-day streak` : 'Your witty study owl'}
       headerExtra={null}
     >
       <div className="flex h-full flex-col">

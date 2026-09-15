@@ -19,6 +19,10 @@ export function AppProvider({ children }) {
   const [profile, setProfile] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [exams, setExams] = useState([]);
+  const [studyPlans, setStudyPlans] = useState([]);
+  const [topics, setTopics] = useState([]);
+  const [testRecords, setTestRecords] = useState([]);
+  const [studySessions, setStudySessions] = useState([]);
   const [streak, setStreak] = useState(null);
   const [daily, setDaily] = useState(EMPTY_DAILY);
   const [notifications, setNotifications] = useState([]);
@@ -121,6 +125,50 @@ export function AppProvider({ children }) {
     }
   }, []);
 
+  const loadStudyPlans = useCallback(async (uid) => {
+    if (!uid) { setStudyPlans([]); return; }
+    const { data } = await supabase
+      .from('study_plans')
+      .select('*')
+      .eq('user_id', uid)
+      .order('plan_date', { ascending: true })
+      .order('sort_order', { ascending: true });
+    if (data) setStudyPlans(data);
+  }, []);
+
+  const loadTopics = useCallback(async (uid) => {
+    if (!uid) { setTopics([]); return; }
+    const { data } = await supabase
+      .from('topic_tracking')
+      .select('*')
+      .eq('user_id', uid)
+      .order('subject', { ascending: true })
+      .order('chapter', { ascending: true });
+    if (data) setTopics(data);
+  }, []);
+
+  const loadTestRecords = useCallback(async (uid) => {
+    if (!uid) { setTestRecords([]); return; }
+    const { data } = await supabase
+      .from('test_records')
+      .select('*')
+      .eq('user_id', uid)
+      .order('taken_on', { ascending: false })
+      .order('created_at', { ascending: false });
+    if (data) setTestRecords(data);
+  }, []);
+
+  const loadStudySessions = useCallback(async (uid) => {
+    if (!uid) { setStudySessions([]); return; }
+    const { data } = await supabase
+      .from('study_sessions')
+      .select('*')
+      .eq('user_id', uid)
+      .gte('started_at', dayjs().subtract(30, 'day').startOf('day').toISOString())
+      .order('started_at', { ascending: false });
+    if (data) setStudySessions(data);
+  }, []);
+
   const refreshAll = useCallback(async () => {
     setFeedBusy(true);
     await Promise.all([
@@ -129,9 +177,13 @@ export function AppProvider({ children }) {
       loadDaily(),
       loadTasks(userId),
       loadExams(userId),
+      loadStudyPlans(userId),
+      loadTopics(userId),
+      loadTestRecords(userId),
+      loadStudySessions(userId),
     ]);
     setFeedBusy(false);
-  }, [userId, loadProfile, loadStreak, loadDaily, loadTasks, loadExams]);
+  }, [userId, loadProfile, loadStreak, loadDaily, loadTasks, loadExams, loadStudyPlans, loadTopics, loadTestRecords, loadStudySessions]);
 
   useEffect(() => {
     if (session) refreshAll();
@@ -145,6 +197,10 @@ export function AppProvider({ children }) {
       .channel('shared-feed')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, refreshAll)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'exams' }, refreshAll)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'study_plans' }, refreshAll)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'topic_tracking' }, refreshAll)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'test_records' }, refreshAll)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'study_sessions' }, refreshAll)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'streaks' }, () => loadStreak(userId))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
         loadProfile(userId);
@@ -179,6 +235,10 @@ export function AppProvider({ children }) {
       profile,
       tasks,
       exams,
+      studyPlans,
+      topics,
+      testRecords,
+      studySessions,
       streak,
       activeStreak,
       daily,
@@ -255,6 +315,103 @@ export function AppProvider({ children }) {
         await loadDaily();
         return data;
       },
+      addStudyPlan: async (payload) => {
+        const { data, error } = await supabase
+          .from('study_plans')
+          .insert({ user_id: userId, ...payload })
+          .select()
+          .single();
+        if (error) throw error;
+        await loadStudyPlans(userId);
+        return data;
+      },
+      updateStudyPlan: async (id, patch) => {
+        const { data, error } = await supabase.from('study_plans').update(patch).eq('id', id).select().single();
+        if (error) throw error;
+        await loadStudyPlans(userId);
+        return data;
+      },
+      deleteStudyPlan: async (id) => {
+        const { error } = await supabase.from('study_plans').delete().eq('id', id);
+        if (error) throw error;
+        await loadStudyPlans(userId);
+      },
+      addTopic: async (payload) => {
+        const { data, error } = await supabase
+          .from('topic_tracking')
+          .insert({ user_id: userId, ...payload })
+          .select()
+          .single();
+        if (error) throw error;
+        await loadTopics(userId);
+        return data;
+      },
+      upsertTopic: async (payload) => {
+        const { data, error } = await supabase
+          .from('topic_tracking')
+          .upsert({ user_id: userId, ...payload }, { onConflict: 'user_id,subject,chapter,topic' })
+          .select()
+          .single();
+        if (error) throw error;
+        await loadTopics(userId);
+        return data;
+      },
+      updateTopic: async (id, patch) => {
+        const { data, error } = await supabase.from('topic_tracking').update(patch).eq('id', id).select().single();
+        if (error) throw error;
+        await loadTopics(userId);
+        return data;
+      },
+      deleteTopic: async (id) => {
+        const { error } = await supabase.from('topic_tracking').delete().eq('id', id);
+        if (error) throw error;
+        await loadTopics(userId);
+      },
+      addTestRecord: async (payload) => {
+        const { data, error } = await supabase
+          .from('test_records')
+          .insert({ user_id: userId, ...payload })
+          .select()
+          .single();
+        if (error) throw error;
+        await loadTestRecords(userId);
+        return data;
+      },
+      updateTestRecord: async (id, patch) => {
+        const { data, error } = await supabase.from('test_records').update(patch).eq('id', id).select().single();
+        if (error) throw error;
+        await loadTestRecords(userId);
+        return data;
+      },
+      deleteTestRecord: async (id) => {
+        const { error } = await supabase.from('test_records').delete().eq('id', id);
+        if (error) throw error;
+        await loadTestRecords(userId);
+      },
+      addStudySession: async (payload) => {
+        const { data, error } = await supabase
+          .from('study_sessions')
+          .insert({ user_id: userId, auto: false, ...payload })
+          .select()
+          .single();
+        if (error) throw error;
+        await loadStudySessions(userId);
+        return data;
+      },
+      commitStudySession: async (session) => {
+        if (!session?.started_at) return null;
+        const ended = new Date();
+        const duration = Math.round((ended.getTime() - new Date(session.started_at).getTime()) / 1000);
+        if (duration < 0) return null;
+        const { data, error } = await supabase
+          .from('study_sessions')
+          .insert({ user_id: userId, duration_seconds: duration, started_at: session.started_at, ended_at: ended.toISOString(), subject: session.subject || null, auto: true })
+          .select()
+          .single();
+        if (error) throw error;
+        await loadStudySessions(userId);
+        return data;
+      },
       commitStreak,
       fetchNotifications: async () => {
         try {
@@ -271,7 +428,7 @@ export function AppProvider({ children }) {
     }),
     [
       session, userId, profile, tasks, exams, streak, activeStreak, daily, notifications,
-      feedBusy, loadingAuth, commitStreak,
+      feedBusy, loadingAuth, commitStreak, studyPlans, topics, testRecords, studySessions,
     ]
   );
 

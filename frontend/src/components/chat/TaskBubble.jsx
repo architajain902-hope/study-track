@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../store/AppContext';
-import { formatTime, PRIORITY_META, dueLabel, formatDay, isOverdue, RECURRENCE_LABELS } from '../../lib/utils';
+import { formatTime, PRIORITY_META, dueLabel, formatDay, isOverdue, RECURRENCE_LABELS, taskStatus } from '../../lib/utils';
 
 export default function TaskBubble({ task, senderName = 'You' }) {
   const { toggleTask } = useApp();
@@ -9,6 +9,7 @@ export default function TaskBubble({ task, senderName = 'You' }) {
   const [busy, setBusy] = useState(false);
   const overdue = !task.is_completed && task.due_date && isOverdue(task.due_date);
   const meta = PRIORITY_META[task.priority] || PRIORITY_META[2];
+  const status = taskStatus(task);
 
   const onToggle = async (e) => {
     e.stopPropagation();
@@ -23,7 +24,9 @@ export default function TaskBubble({ task, senderName = 'You' }) {
   return (
     <div className="flex flex-col items-start animate-pop">
       <span className="mb-1 pl-1 text-[13px] text-muted">{senderName}</span>
-      <div className={`bubble bubble-in w-full cursor-pointer border-l-4 ${meta.ring} ${overdue ? 'ring-1 ring-danger/60' : ''} ${task.is_completed ? 'opacity-60' : ''}`}>
+      <div className={`bubble bubble-in w-full cursor-pointer border-l-4 ${meta.ring} ${
+                status.key === 'overdue' ? 'ring-1 ring-danger/60' : status.key === 'due-today' ? 'ring-1 ring-warn/50' : ''
+              } ${task.is_completed ? 'opacity-60' : ''}`}>
         <button type="button" onClick={() => navigate(`/task/${task.id}`)} className="block w-full text-left">
           <div className="flex items-start gap-2">
             <button
@@ -64,7 +67,12 @@ export default function TaskBubble({ task, senderName = 'You' }) {
           <span className="chip" style={{ color: meta.color, backgroundColor: `${meta.color}22` }}>
             {meta.label}
           </span>
-          <span className="text-[11px] text-muted">{formatTime(task.created_at)}</span>
+          <span className="flex items-center gap-2">
+            <span className={`chip ${status.key === 'completed' ? 'bg-brand-light/25 text-brand-lighter' : status.key === 'overdue' ? 'bg-danger/20 text-danger' : 'bg-surface-light text-soft'}`}>
+              {status.label}
+            </span>
+            <span className="text-[11px] text-muted">{formatTime(task.created_at)}</span>
+          </span>
         </div>
       </div>
     </div>

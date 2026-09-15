@@ -48,13 +48,11 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-ink px-4 py-10">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-lighter to-brand">
-            <svg viewBox="0 0 24 24" className="h-9 w-9" fill="none" stroke="#0b141a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 3c-4.97 0-9 4.03-9 9 0 1.7.47 3.29 1.29 4.65L3 21l4.46-1.25A8.96 8.96 0 0 0 12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9Z" />
-            </svg>
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-lighter to-brand text-3xl">
+            🦉
           </div>
-          <h1 className="text-2xl font-bold text-white">ChatPlanner</h1>
-          <p className="mt-1 text-sm text-muted">{greeting()}! Your Sati Vidisha study board.</p>
+          <h1 className="text-2xl font-bold text-white">SatiStudy</h1>
+          <p className="mt-1 text-sm text-muted">{greeting()}! Your warm, witty study companion for Sati Vidisha.</p>
         </div>
 
         <div className="rounded-2xl bg-surface-dark p-6 shadow-xl ring-1 ring-surface">

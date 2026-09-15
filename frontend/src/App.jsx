@@ -6,8 +6,17 @@ import DashboardPage from './pages/DashboardPage';
 import CalendarPage from './pages/CalendarPage';
 import StatsPage from './pages/StatsPage';
 import ProfilePage from './pages/ProfilePage';
+import PlannerPage from './pages/PlannerPage';
+import AnalysisPage from './pages/AnalysisPage';
+import FocusPage from './pages/FocusPage';
 import TaskPage from './pages/TaskPage';
 import ExamPage from './pages/ExamPage';
+import { useBrowserNotifications } from './lib/useBrowserNotifications';
+
+function NotificationWatcher() {
+  useBrowserNotifications();
+  return null;
+}
 
 function PrivateRoute({ children }) {
   const { loadingAuth, session } = useApp();
@@ -35,6 +44,7 @@ function LoadingScreen() {
 export default function App() {
   return (
     <AppProvider>
+      <NotificationWatcher />
       <BrowserRouter>
         <Routes>
           <Route
@@ -75,6 +85,30 @@ export default function App() {
             element={
               <PrivateRoute>
                 <CalendarPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/planner"
+            element={
+              <PrivateRoute>
+                <PlannerPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/analysis"
+            element={
+              <PrivateRoute>
+                <AnalysisPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/focus"
+            element={
+              <PrivateRoute>
+                <FocusPage />
               </PrivateRoute>
             }
           />

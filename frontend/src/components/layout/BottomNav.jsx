@@ -2,8 +2,8 @@
 
 const tabs = [
   { to: '/', label: 'Chat', icon: 'chat' },
-  { to: '/calendar', label: 'Calendar', icon: 'calendar' },
-  { to: '/stats', label: 'Stats', icon: 'stats' },
+  { to: '/planner', label: 'Planner', icon: 'calendar' },
+  { to: '/analysis', label: 'Analyse', icon: 'stats' },
   { to: '/settings', label: 'Profile', icon: 'profile' },
 ];
 
