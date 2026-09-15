@@ -1,0 +1,21 @@
+{
+  "name": "chatplanner",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ChatPlanner - WhatsApp-style study planner for Sati Vidisha students",
+  "scripts": {
+    "frontend": "npm --prefix frontend run dev",
+    "backend": "npm --prefix backend run dev",
+    "build": "npm --prefix frontend run build",
+    "preview": "npm --prefix frontend run preview",
+    "db:migrate": "node scripts/apply-migration.js",
+    "db:verify": "node scripts/verify-db.js"
+  },
+  "workspaces": ["frontend", "backend"],
+  "dependencies": {
+    "@supabase/supabase-js": "^2.47.10",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}

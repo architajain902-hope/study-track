@@ -1,0 +1,86 @@
+/* eslint-env browser */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background-color: #0b141a;
+  color: #e9edef;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Thin scrollbars to match WhatsApp feel */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(134, 150, 160, 0.4) transparent;
+}
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(134, 150, 160, 0.4);
+  border-radius: 3px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@layer utilities {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .scroll-smooth-custom {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  .whatsapp-header {
+    @apply flex items-center gap-3 bg-surface-dark/95 px-4 py-3 backdrop-blur border-b border-surface;
+  }
+  .bubble {
+    @apply rounded-lg px-3 py-2 text-[15px] leading-snug shadow-bubble max-w-[80%];
+  }
+  .bubble-out {
+    @apply bg-bubble-out text-white;
+  }
+  .bubble-in {
+    @apply bg-bubble-in text-[#e9edef];
+  }
+  .input-round {
+    @apply w-full rounded-xl bg-surface text-[#e9edef] placeholder-[#8696a0] px-4 py-2.5 outline-none focus:ring-2 focus:ring-brand-lighter/60 border border-transparent;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition select-none;
+  }
+  .btn-primary {
+    @apply btn bg-brand-lighter text-[#0b141a] hover:bg-brand-lighter/90 disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply btn bg-surface-light text-[#e9edef] hover:bg-surface;
+  }
+  .btn-danger {
+    @apply btn bg-danger/15 text-danger hover:bg-danger/25;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium;
+  }
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+.animate-pop {
+  animation: pop-in 0.25s ease-out;
+}
