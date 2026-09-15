@@ -1,11 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-const url = import.meta.env.VITE_SUPABASE_URL;
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!url || !anonKey) {
-  throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY in frontend/.env');
-}
+// The Supabase URL and anon/publishable key are designed to be public — they are
+// embedded in every client bundle. Override via VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY
+// (e.g. if you point the app at a different project), otherwise these defaults apply.
+const url = (import.meta.env.VITE_SUPABASE_URL) || 'https://vcsxmvtjrlqmyflnjvjl.supabase.co';
+const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_7vfJksfDKEe9GjBJSxaQOw_Rh4fFndj';
 
 export const supabase = createClient(url, anonKey, {
   auth: {
