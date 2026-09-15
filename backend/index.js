@@ -7,26 +7,39 @@ const PORT = process.env.PORT || 4000;
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
 
 // ── Supabase Clients ──────────────────────────────────────────────────────
-const supabaseUrl = process.env.SUPABASE_URL;
-const anonKey    = process.env.SUPABASE_ANON_KEY;
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Never throw at module load: a serverless cold start must stay responsive so
+// we can surface diagnostics in the response body instead of a bare 500.
+const envSnapshot = {
+  url:      !!process.env.SUPABASE_URL,
+  anon:     !!process.env.SUPABASE_ANON_KEY,
+  service:  !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+  vercel:   !!process.env.VERCEL,
+};
+console.error('[backend] init', JSON.stringify(envSnapshot), 'node=' + process.version, 'cwd=' + process.cwd());
 
-if (!supabaseUrl || !anonKey || !serviceKey) {
-  console.error('[backend] missing env', {
-    SUPABASE_URL: !!process.env.SUPABASE_URL,
-    SUPABASE_ANON_KEY: !!process.env.SUPABASE_ANON_KEY,
-    SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-    VERCEL: !!process.env.VERCEL,
-  });
-  throw new Error('Missing SUPABASE_URL, SUPABASE_ANON_KEY, or SUPABASE_SERVICE_ROLE_KEY in .env');
+let supabaseReady    = false;
+let supabaseInitError = null;
+let supabaseAdmin    = null;
+
+if (envSnapshot.url && envSnapshot.anon && envSnapshot.service) {
+  try {
+    supabaseAdmin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+    supabaseReady = true;
+  } catch (err) {
+    supabaseInitError = err.message;
+    console.error('[backend] createClient failed', err.message);
+  }
+} else {
+  supabaseInitError = 'Missing SUPABASE_URL, SUPABASE_ANON_KEY, or SUPABASE_SERVICE_ROLE_KEY';
 }
-console.error('[backend] env OK', !!process.env.SUPABASE_URL, !!process.env.SUPABASE_ANON_KEY, !!process.env.SUPABASE_SERVICE_ROLE_KEY, 'vercel=' + !!process.env.VERCEL);
 
-// Service-role client — full DB access, bypasses RLS. Server-side use only.
-export const supabaseAdmin = createClient(supabaseUrl, serviceKey);
+export const supabaseAdminExport = supabaseAdmin;
 
 // ── Middleware ─────────────────────────────────────────────────────────────
 function authMiddleware(req, res, next) {
+  if (!supabaseReady) {
+    return res.status(503).json({ error: 'Backend not initialized.', detail: supabaseInitError });
+  }
   const header = req.headers.authorization;
   if (!header?.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Missing or invalid Authorization header.' });
@@ -34,7 +47,7 @@ function authMiddleware(req, res, next) {
   const token = header.slice(7);
 
   // Create a scoped supabase client that verifies the JWT via supabase.auth.getUser
-  const scoped = createClient(supabaseUrl, anonKey, {
+  const scoped = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
     global: { headers: { Authorization: `Bearer ${token}` } },
   });
   req.scoped = scoped;
@@ -62,7 +75,26 @@ app.use(express.json());
 
 // ── Health ────────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    backend: 'ready',
+    supabaseReady,
+    supabaseInitError,
+  });
+});
+
+// ── Env diagnostics ───────────────────────────────────────────────────────
+app.get('/api/debug-env', (_req, res) => {
+  res.json({
+    env: envSnapshot,
+    node: process.version,
+    cwd: process.cwd(),
+    pid: process.pid,
+    supabaseReady,
+    supabaseInitError,
+    clientOrigin: CLIENT_ORIGIN,
+  });
 });
 
 // ── Get current user's profile ────────────────────────────────────────────
@@ -133,6 +165,12 @@ app.post('/api/streak/commit', authMiddleware, async (req, res) => {
     console.error('POST /api/streak/commit error', err);
     res.status(500).json({ error: 'Failed to update streak.' });
   }
+});
+
+// ── Global error handler ──────────────────────────────────────────────────
+app.use((err, _req, res, _next) => {
+  console.error('[backend] unhandled error', err?.message, err?.stack);
+  res.status(500).json({ error: err?.message || 'Internal server error.' });
 });
 
 // ── Catch-all: 404 ────────────────────────────────────────────────────────
