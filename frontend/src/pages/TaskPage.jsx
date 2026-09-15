@@ -48,7 +48,7 @@ export default function TaskPage() {
               onClick={onToggle}
               disabled={busy}
               className={`mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition ${
-                task.is_completed ? 'border-brand-lighter bg-brand-lighter text-[#0b141a]' : 'border-[#8696a0] hover:border-brand-lighter'
+                task.is_completed ? 'border-brand-lighter bg-brand-lighter text-onbrand' : 'border-muted hover:border-brand-lighter'
               }`}
             >
               {task.is_completed && (
@@ -58,28 +58,28 @@ export default function TaskPage() {
               )}
             </button>
             <div className="min-w-0 flex-1">
-              <h2 className={`text-xl font-bold text-white ${task.is_completed ? 'line-through decoration-[#8696a0]' : ''}`}>
+              <h2 className={`text-xl font-bold text-white ${task.is_completed ? 'line-through decoration-muted' : ''}`}>
                 {task.title}
               </h2>
               <div className="mt-2 flex flex-wrap gap-2">
                 <span className="chip" style={{ color: meta.color, backgroundColor: `${meta.color}22` }}>
                   {meta.label} priority
                 </span>
-                {task.subject && <span className="chip bg-surface-light text-[#aebac1]">{task.subject}</span>}
+                {task.subject && <span className="chip bg-surface-light text-soft">{task.subject}</span>}
                 {task.recurrence && task.recurrence !== 'none' && (
-                  <span className="chip bg-surface-light text-[#aebac1]">↻ {RECURRENCE_LABELS[task.recurrence]}</span>
+                  <span className="chip bg-surface-light text-soft">↻ {RECURRENCE_LABELS[task.recurrence]}</span>
                 )}
               </div>
             </div>
           </div>
 
           {task.description && (
-            <div className="mt-4 whitespace-pre-line rounded-lg bg-ink/50 p-3 text-[14.5px] text-[#c1ccd1]">
+            <div className="mt-4 whitespace-pre-line rounded-lg bg-ink/50 p-3 text-[14.5px] text-body">
               {task.description}
             </div>
           )}
 
-          <div className="mt-4 space-y-2 text-sm text-[#8696a0]">
+          <div className="mt-4 space-y-2 text-sm text-muted">
             {task.due_date && (
               <div className="flex items-center gap-2">
                 <span>📅</span>

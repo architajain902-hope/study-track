@@ -77,7 +77,7 @@ export default function ResetPasswordPage() {
           <h1 className="text-2xl font-bold text-white">
             {mode === 'reset' ? 'Choose a new password' : 'Reset your password'}
           </h1>
-          <p className="mt-1 text-sm text-[#8696a0]">
+          <p className="mt-1 text-sm text-muted">
             {mode === 'reset'
               ? 'Your reset link is verified. Set a new password to continue.'
               : 'Enter the email for your account and we’ll send a reset link.'}
@@ -105,7 +105,7 @@ export default function ResetPasswordPage() {
               <button type="submit" disabled={busy} className="btn-primary w-full py-3">
                 {busy ? 'Sending…' : 'Send reset link'}
               </button>
-              <Link to="/login" className="block text-center text-xs text-[#8696a0] hover:text-white">
+              <Link to="/login" className="block text-center text-xs text-muted hover:text-white">
                 Back to log in
               </Link>
             </form>

@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+﻿import { NavLink } from 'react-router-dom';
 
 const tabs = [
   { to: '/', label: 'Chat', icon: 'chat' },
@@ -44,7 +44,7 @@ export default function BottomNav() {
             end={t.to === '/'}
             className={({ isActive }) =>
               `flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-medium transition ${
-                isActive ? 'text-brand-lighter' : 'text-[#8696a0] hover:text-[#aebac1]'
+                isActive ? 'text-brand-lighter' : 'text-muted hover:text-soft'
               }`
             }
           >

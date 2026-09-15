@@ -23,7 +23,7 @@ export default function Modal({ children, onClose, title }) {
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-[#8696a0] hover:bg-surface hover:text-white"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-surface hover:text-white"
           >
             ✕
           </button>

@@ -9,7 +9,7 @@ function HeatmapDay({ date, count, active }) {
     <div
       title={`${date}: ${count} task${count === 1 ? '' : 's'} completed`}
       className={`h-3 w-3 rounded-sm ${active ? 'ring-1 ring-brand-lighter' : ''}`}
-      style={{ backgroundColor: count > 0 ? `rgba(37,211,102,${opacity})` : '#111B21' }}
+      style={{ backgroundColor: count > 0 ? `rgba(var(--brand-lighter) / ${opacity})` : 'rgb(var(--heat-empty))' }}
     />
   );
 }
@@ -55,17 +55,17 @@ export default function StatsPage() {
           <div className="flex flex-col items-center rounded-xl bg-surface-dark p-4 ring-1 ring-surface">
             <span className="text-3xl">🔥</span>
             <span className="mt-1 text-2xl font-bold text-white">{activeStreak}</span>
-            <span className="text-[11.5px] text-[#8696a0]">Day streak</span>
+            <span className="text-[11.5px] text-muted">Day streak</span>
           </div>
           <div className="flex flex-col items-center rounded-xl bg-surface-dark p-4 ring-1 ring-surface">
             <span className="text-3xl">🏆</span>
             <span className="mt-1 text-2xl font-bold text-white">{streak?.best_streak || 0}</span>
-            <span className="text-[11.5px] text-[#8696a0]">Best streak</span>
+            <span className="text-[11.5px] text-muted">Best streak</span>
           </div>
           <div className="flex flex-col items-center rounded-xl bg-surface-dark p-4 ring-1 ring-surface">
             <span className="text-3xl">📊</span>
             <span className="mt-1 text-2xl font-bold text-white">{completionRate}%</span>
-            <span className="text-[11.5px] text-[#8696a0]">Complete</span>
+            <span className="text-[11.5px] text-muted">Complete</span>
           </div>
         </div>
 
@@ -81,7 +81,7 @@ export default function StatsPage() {
               style={{ width: `${Math.min(100, (daily.completed / daily.goal) * 100)}%` }}
             />
           </div>
-          <p className="mt-1.5 text-[12.5px] text-[#8696a0]">
+          <p className="mt-1.5 text-[12.5px] text-muted">
             {daily.completed >= daily.goal
               ? '🎉 Goal met! Keep going!'
               : `${daily.goal - daily.completed} more task${daily.goal - daily.completed === 1 ? '' : 's'} to hit your goal.`}
@@ -100,15 +100,15 @@ export default function StatsPage() {
           </div>
           <div className="mt-2 flex gap-[3px]">
             {weekLabels.map((l) => (
-              <span key={l} className="text-[9px] text-[#8696a0]" style={{ minWidth: '12px' }}>{l.split(' ')[1]}</span>
+              <span key={l} className="text-[9px] text-muted" style={{ minWidth: '12px' }}>{l.split(' ')[1]}</span>
             ))}
           </div>
-          <div className="mt-2 flex items-center gap-1 text-[11px] text-[#8696a0]">
+          <div className="mt-2 flex items-center gap-1 text-[11px] text-muted">
             <span>Less</span>
-            <div className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: '#111B21' }} />
-            <div className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: 'rgba(37,211,102,0.3)' }} />
-            <div className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: 'rgba(37,211,102,0.6)' }} />
-            <div className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: 'rgba(37,211,102,1)' }} />
+            <div className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: 'rgb(var(--heat-empty))' }} />
+            <div className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: 'rgba(var(--brand-lighter) / 0.3)' }} />
+            <div className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: 'rgba(var(--brand-lighter) / 0.6)' }} />
+            <div className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: 'rgb(var(--brand-lighter))' }} />
             <span>More</span>
           </div>
         </div>
@@ -118,19 +118,19 @@ export default function StatsPage() {
           <p className="mb-3 font-medium text-white">Summary</p>
           <div className="space-y-2 text-sm">
             <div className="flex items-center justify-between">
-              <span className="text-[#8696a0]">Total tasks</span>
+              <span className="text-muted">Total tasks</span>
               <span className="text-white font-medium">{tasks.length}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[#8696a0]">Completed</span>
+              <span className="text-muted">Completed</span>
               <span className="text-brand-lighter font-medium">{totalCompleted}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[#8696a0]">Pending</span>
-              <span className="text-[#aebac1] font-medium">{totalPending}</span>
+              <span className="text-muted">Pending</span>
+              <span className="text-soft font-medium">{totalPending}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[#8696a0]">Exams scheduled</span>
+              <span className="text-muted">Exams scheduled</span>
               <span className="text-white font-medium">{exams.length}</span>
             </div>
           </div>

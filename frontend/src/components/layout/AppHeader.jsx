@@ -10,13 +10,13 @@ export default function AppHeader({ title, subtitle }) {
   return (
     <header className="whatsapp-header sticky top-0 z-20">
       <Link to="/" className="flex items-center gap-2">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-brand-lighter to-brand text-sm font-bold text-[#0b141a]">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-brand-lighter to-brand text-sm font-bold text-onbrand">
           {initials(profile?.full_name)}
         </div>
       </Link>
       <button type="button" onClick={() => navigate('/')} className="flex-1 text-left">
         <p className="text-[16px] font-semibold leading-tight text-white">{title}</p>
-        <p className="text-xs text-[#8696a0]">{subtitle}</p>
+        <p className="text-xs text-muted">{subtitle}</p>
       </button>
 
       <div className="flex items-center gap-2">
@@ -32,7 +32,7 @@ export default function AppHeader({ title, subtitle }) {
         <button
           type="button"
           onClick={() => navigate('/stats')}
-          className="flex h-9 w-9 items-center justify-center rounded-full text-[#aebac1] hover:bg-surface"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-soft hover:bg-surface"
           title="Streaks & stats"
         >
           <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -45,7 +45,7 @@ export default function AppHeader({ title, subtitle }) {
         <button
           type="button"
           onClick={() => navigate('/settings')}
-          className="relative flex h-9 w-9 items-center justify-center rounded-full text-[#aebac1] hover:bg-surface"
+          className="relative flex h-9 w-9 items-center justify-center rounded-full text-soft hover:bg-surface"
           title="Settings"
         >
           <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

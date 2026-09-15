@@ -3,32 +3,98 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   Theme tokens — RGB channel triplets per data-theme (default = dark)
+   Consumed via rgb(var(--t) / <alpha>) so Tailwind opacity
+   modifiers keep working across themes.
+   ============================================================ */
 :root {
   color-scheme: dark;
+  --bg: 11 20 26;
+  --surface: 32 44 51;
+  --surface-light: 42 57 66;
+  --surface-dark: 17 27 33;
+  --text: 233 237 239;
+  --text-muted: 134 150 160;
+  --text-soft: 174 186 193;
+  --text-body: 193 204 209;
+  --text-dim: 68 80 89;
+  --brand: 7 94 84;
+  --brand-light: 18 140 126;
+  --brand-lighter: 37 211 102;
+  --brand-fade: 220 248 198;
+  --bubble-out: 0 92 75;
+  --bubble-in: 32 44 51;
+  --bubble-out-text: 255 255 255;
+  --bubble-in-text: 233 237 239;
+  --accent: 0 168 132;
+  --danger: 241 92 109;
+  --warn: 255 190 92;
+  --warn-text: 255 215 154;
+  --warn-muted: 247 195 109;
+  --on-brand: 11 20 26;
+  --heat-empty: 17 27 33;
+  --chat-pattern: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23263643' stroke-width='1' opacity='0.35'%3E%3Ccircle cx='15' cy='15' r='6'/%3E%3Cpath d='M15 25v80M25 15h80M15 100l85-85M25 105l80-80'/%3E%3Ccircle cx='105' cy='105' r='6'/%3E%3Cpath d='M15 60h90M60 15v90'/%3E%3C/g%3E%3C/svg%3E");
+  --shadow-bubble: 0 1px 0.5px rgba(11, 20, 26, 0.13);
+  --scrollbar: rgba(134, 150, 160, 0.4);
 }
 
-html, body, #root {
+html[data-theme='light'] {
+  color-scheme: light;
+  --bg: 251 246 238;
+  --surface: 255 255 255;
+  --surface-light: 245 239 230;
+  --surface-dark: 240 232 218;
+  --text: 43 58 51;
+  --text-muted: 138 133 120;
+  --text-soft: 110 106 94;
+  --text-body: 74 74 68;
+  --text-dim: 207 198 180;
+  --brand: 7 94 84;
+  --brand-light: 18 140 126;
+  --brand-lighter: 31 163 99;
+  --brand-fade: 230 247 214;
+  --bubble-out: 231 245 223;
+  --bubble-in: 255 255 255;
+  --bubble-out-text: 30 92 67;
+  --bubble-in-text: 43 58 51;
+  --accent: 14 156 132;
+  --danger: 217 76 94;
+  --warn: 230 162 60;
+  --warn-text: 199 126 31;
+  --warn-muted: 176 119 18;
+  --on-brand: 11 20 26;
+  --heat-empty: 241 233 219;
+  --chat-pattern: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%232a7057' stroke-width='1' opacity='0.14'%3E%3Ccircle cx='15' cy='15' r='6'/%3E%3Cpath d='M15 25v80M25 15h80M15 100l85-85M25 105l80-80'/%3E%3Ccircle cx='105' cy='105' r='6'/%3E%3Cpath d='M15 60h90M60 15v90'/%3E%3C/g%3E%3C/svg%3E");
+  --shadow-bubble: 0 1px 2px rgba(43, 58, 51, 0.08);
+  --scrollbar: rgba(110, 106, 94, 0.35);
+}
+
+html,
+body,
+#root {
   height: 100%;
 }
 
 body {
-  background-color: #0b141a;
-  color: #e9edef;
+  background-color: rgb(var(--bg));
+  color: rgb(var(--text));
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 /* Thin scrollbars to match WhatsApp feel */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(134, 150, 160, 0.4) transparent;
+  scrollbar-color: var(--scrollbar) transparent;
 }
 *::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 *::-webkit-scrollbar-thumb {
-  background: rgba(134, 150, 160, 0.4);
+  background: var(--scrollbar);
   border-radius: 3px;
 }
 *::-webkit-scrollbar-track {
@@ -52,22 +118,22 @@ body {
     @apply rounded-lg px-3 py-2 text-[15px] leading-snug shadow-bubble max-w-[80%];
   }
   .bubble-out {
-    @apply bg-bubble-out text-white;
+    @apply bg-bubble-out text-bubble-out-text;
   }
   .bubble-in {
-    @apply bg-bubble-in text-[#e9edef];
+    @apply bg-bubble-in text-bubble-in-text;
   }
   .input-round {
-    @apply w-full rounded-xl bg-surface text-[#e9edef] placeholder-[#8696a0] px-4 py-2.5 outline-none focus:ring-2 focus:ring-brand-lighter/60 border border-transparent;
+    @apply w-full rounded-xl bg-surface text-[rgb(var(--text))] placeholder-[rgb(var(--text-muted))] px-4 py-2.5 outline-none focus:ring-2 focus:ring-brand-lighter/60 border border-transparent;
   }
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition select-none;
   }
   .btn-primary {
-    @apply btn bg-brand-lighter text-[#0b141a] hover:bg-brand-lighter/90 disabled:opacity-50;
+    @apply btn bg-brand-lighter text-onbrand hover:bg-brand-lighter/90 disabled:opacity-50;
   }
   .btn-secondary {
-    @apply btn bg-surface-light text-[#e9edef] hover:bg-surface;
+    @apply btn bg-surface-light text-[rgb(var(--text))] hover:bg-surface;
   }
   .btn-danger {
     @apply btn bg-danger/15 text-danger hover:bg-danger/25;
@@ -78,8 +144,14 @@ body {
 }
 
 @keyframes pop-in {
-  from { opacity: 0; transform: translateY(6px) scale(0.98); }
-  to   { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 .animate-pop {
   animation: pop-in 0.25s ease-out;

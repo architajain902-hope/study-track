@@ -22,7 +22,7 @@ export default function TaskBubble({ task, senderName = 'You' }) {
 
   return (
     <div className="flex flex-col items-start animate-pop">
-      <span className="mb-1 pl-1 text-[13px] text-[#8696a0]">{senderName}</span>
+      <span className="mb-1 pl-1 text-[13px] text-muted">{senderName}</span>
       <div className={`bubble bubble-in w-full cursor-pointer border-l-4 ${meta.ring} ${overdue ? 'ring-1 ring-danger/60' : ''} ${task.is_completed ? 'opacity-60' : ''}`}>
         <button type="button" onClick={() => navigate(`/task/${task.id}`)} className="block w-full text-left">
           <div className="flex items-start gap-2">
@@ -32,7 +32,7 @@ export default function TaskBubble({ task, senderName = 'You' }) {
               disabled={busy}
               aria-label={task.is_completed ? 'Mark incomplete' : 'Mark complete'}
               className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition ${
-                task.is_completed ? 'border-brand-lighter bg-brand-lighter text-[#0b141a]' : 'border-[#8696a0] hover:border-brand-lighter'
+                task.is_completed ? 'border-brand-lighter bg-brand-lighter text-onbrand' : 'border-muted hover:border-brand-lighter'
               }`}
             >
               {task.is_completed && (
@@ -42,19 +42,19 @@ export default function TaskBubble({ task, senderName = 'You' }) {
               )}
             </button>
             <div className="min-w-0 flex-1">
-              <p className={`font-medium ${task.is_completed ? 'line-through decoration-[#8696a0]' : ''}`}>{task.title}</p>
+              <p className={`font-medium ${task.is_completed ? 'line-through decoration-muted' : ''}`}>{task.title}</p>
               {task.description && (
-                <p className="mt-0.5 whitespace-pre-line text-[13px] text-[#c1ccd1]">{task.description}</p>
+                <p className="mt-0.5 whitespace-pre-line text-[13px] text-body">{task.description}</p>
               )}
               <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                {task.subject && <span className="chip bg-surface-light text-[#aebac1]">{task.subject}</span>}
+                {task.subject && <span className="chip bg-surface-light text-soft">{task.subject}</span>}
                 {task.due_date && (
-                  <span className={`chip ${overdue ? 'bg-danger/20 text-danger' : 'bg-surface-light text-[#aebac1]'}`}>
+                  <span className={`chip ${overdue ? 'bg-danger/20 text-danger' : 'bg-surface-light text-soft'}`}>
                     📅 {formatDay(task.due_date)} · {dueLabel(task.due_date)}
                   </span>
                 )}
                 {task.recurrence && task.recurrence !== 'none' && (
-                  <span className="chip bg-surface-light text-[#aebac1]">↻ {RECURRENCE_LABELS[task.recurrence] || task.recurrence}</span>
+                  <span className="chip bg-surface-light text-soft">↻ {RECURRENCE_LABELS[task.recurrence] || task.recurrence}</span>
                 )}
               </div>
             </div>
@@ -64,7 +64,7 @@ export default function TaskBubble({ task, senderName = 'You' }) {
           <span className="chip" style={{ color: meta.color, backgroundColor: `${meta.color}22` }}>
             {meta.label}
           </span>
-          <span className="text-[11px] text-[#8696a0]">{formatTime(task.created_at)}</span>
+          <span className="text-[11px] text-muted">{formatTime(task.created_at)}</span>
         </div>
       </div>
     </div>

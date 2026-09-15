@@ -54,7 +54,7 @@ export default function LoginPage() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-white">ChatPlanner</h1>
-          <p className="mt-1 text-sm text-[#8696a0]">{greeting()}! Your Sati Vidisha study board.</p>
+          <p className="mt-1 text-sm text-muted">{greeting()}! Your Sati Vidisha study board.</p>
         </div>
 
         <div className="rounded-2xl bg-surface-dark p-6 shadow-xl ring-1 ring-surface">
@@ -65,7 +65,7 @@ export default function LoginPage() {
                 type="button"
                 onClick={() => { setMode(m); setError(''); setNotice(''); }}
                 className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
-                  mode === m ? 'bg-brand-lighter text-[#0b141a]' : 'text-[#8696a0] hover:text-white'
+                  mode === m ? 'bg-brand-lighter text-onbrand' : 'text-muted hover:text-white'
                 }`}
               >
                 {m === 'login' ? 'Log in' : 'Sign up'}
@@ -119,7 +119,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="mt-4 text-center text-xs text-[#8696a0]">
+          <p className="mt-4 text-center text-xs text-muted">
             Study tasks, exam reminders and streaks — one chat board.
           </p>
         </div>

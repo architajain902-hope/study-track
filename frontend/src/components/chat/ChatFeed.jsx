@@ -8,7 +8,7 @@ import { formatDay, sortFeed, dueLabel, daysUntil, greeting } from '../../lib/ut
 function DateSeparator({ label }) {
   return (
     <div className="my-2 flex justify-center">
-      <span className="rounded-lg bg-surface-dark px-3 py-1 text-[11.5px] font-medium text-[#8696a0] shadow-bubble">
+      <span className="rounded-lg bg-surface-dark px-3 py-1 text-[11.5px] font-medium text-muted shadow-bubble">
         {label}
       </span>
     </div>
@@ -38,11 +38,11 @@ function NotificationsBar({ notifications }) {
           <Link
             key={`${n.kind}-${(n.task || n.exam).id}`}
             to={to}
-            className="flex items-center gap-2 rounded-lg border border-warn/30 bg-warn/10 px-3 py-2 text-[13px] text-[#ffd79a] transition hover:border-warn/60"
+            className="flex items-center gap-2 rounded-lg border border-warn/30 bg-warn/10 px-3 py-2 text-[13px] text-warn-text transition hover:border-warn/60"
           >
             <span className="text-sm">⏰</span>
             <span className="min-w-0 flex-1 truncate font-medium">{title}</span>
-            <span className="shrink-0 text-[11.5px] text-[#f7c36d]">{when}</span>
+            <span className="shrink-0 text-[11.5px] text-warn-muted">{when}</span>
           </Link>
         );
       })}
@@ -77,7 +77,7 @@ export default function ChatFeed({ onAddQuick }) {
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-dark text-3xl ring-1 ring-surface">💬</div>
         <div>
           <h2 className="text-lg font-semibold text-white">{greeting()}! Your board is empty.</h2>
-          <p className="mt-1 text-sm text-[#8696a0]">
+          <p className="mt-1 text-sm text-muted">
             This chat is your planner. Add a task or an exam and it will show up right here.
           </p>
         </div>
@@ -131,7 +131,7 @@ export default function ChatFeed({ onAddQuick }) {
       </div>
 
       <div className="mt-4 flex justify-center">
-        <span className="text-[11px] text-[#8696a0]">
+        <span className="text-[11px] text-muted">
           {tasks.length} task{tasks.length === 1 ? '' : 's'} · {exams.length} exam{exams.length === 1 ? '' : 's'}
         </span>
       </div>

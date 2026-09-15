@@ -25,7 +25,7 @@ export default function Composer({ onAddTask, onAddExam }) {
       <button
         type="button"
         onClick={onAddExam}
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#8696a0] transition hover:bg-surface hover:text-white"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted transition hover:bg-surface hover:text-white"
         title="Add exam"
       >
         📝
@@ -33,7 +33,7 @@ export default function Composer({ onAddTask, onAddExam }) {
       <button
         type="button"
         onClick={() => onAddTask()}
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#8696a0] transition hover:bg-surface hover:text-white"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted transition hover:bg-surface hover:text-white"
         title="Add task"
       >
         <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -50,7 +50,7 @@ export default function Composer({ onAddTask, onAddExam }) {
         type="submit"
         disabled={!text.trim()}
         aria-label="Send task"
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-lighter text-[#0b141a] transition hover:bg-brand-light disabled:opacity-30"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-lighter text-onbrand transition hover:bg-brand-light disabled:opacity-30"
       >
         <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M5 12h14M12 5l7 7-7 7" />

@@ -24,18 +24,18 @@ function ExamDetail({ exam, onClose, onBack }) {
             <h2 className="text-xl font-bold text-white">{exam.subject}</h2>
             <div className={`mt-2 text-4xl font-bold ${diff === 0 ? 'text-brand-lighter' : 'text-white'}`}>
               {diff < 0 ? 'Done' : diff === 0 ? 'Today' : diff}
-              {diff > 0 && <span className="ml-1 text-sm font-normal text-[#8696a0]">days left</span>}
+              {diff > 0 && <span className="ml-1 text-sm font-normal text-muted">days left</span>}
             </div>
           </div>
         </div>
 
         {exam.notes && (
-          <div className="mt-4 whitespace-pre-line rounded-lg bg-ink/50 p-3 text-[14.5px] text-[#c1ccd1]">
+          <div className="mt-4 whitespace-pre-line rounded-lg bg-ink/50 p-3 text-[14.5px] text-body">
             {exam.notes}
           </div>
         )}
 
-        <div className="mt-4 space-y-2 text-sm text-[#8696a0]">
+        <div className="mt-4 space-y-2 text-sm text-muted">
           <div className="flex items-center gap-2">
             <span>📅</span>
             <span>{formatFull(exam.exam_date)} · {dueLabel(exam.exam_date)}</span>
@@ -94,7 +94,7 @@ export default function ExamPage() {
         {!exams.length && (
           <div className="flex flex-col items-center gap-3 py-12 text-center">
             <div className="text-4xl">📝</div>
-            <p className="text-sm text-[#8696a0]">No exams yet. Add one to see it here and on the dashboard.</p>
+            <p className="text-sm text-muted">No exams yet. Add one to see it here and on the dashboard.</p>
           </div>
         )}
 
@@ -115,7 +115,7 @@ export default function ExamPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium text-white">{e.subject}</p>
-                    <p className="text-[12.5px] text-[#8696a0]">{formatFull(e.exam_date)} · {dueLabel(e.exam_date)}</p>
+                    <p className="text-[12.5px] text-muted">{formatFull(e.exam_date)} · {dueLabel(e.exam_date)}</p>
                   </div>
                   {diff >= 0 && diff <= 3 && (
                     <span className="shrink-0 chip bg-brand-lighter/20 text-brand-lighter text-[11px]">Soon</span>

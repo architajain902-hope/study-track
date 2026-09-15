@@ -46,17 +46,17 @@ export default function CalendarPage() {
       <div className="px-3 py-4 animate-pop">
         {/* Month navigation */}
         <div className="mb-3 flex items-center justify-between">
-          <button type="button" onClick={() => changeMonth(-1)} className="flex h-8 w-8 items-center justify-center rounded-full text-[#8696a0] hover:bg-surface hover:text-white">
+          <button type="button" onClick={() => changeMonth(-1)} className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-surface hover:text-white">
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M15 18l-6-6 6-6" /></svg>
           </button>
           <p className="text-[16px] font-semibold text-white">{MONTH_NAMES[month]} {year}</p>
-          <button type="button" onClick={() => changeMonth(1)} className="flex h-8 w-8 items-center justify-center rounded-full text-[#8696a0] hover:bg-surface hover:text-white">
+          <button type="button" onClick={() => changeMonth(1)} className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-surface hover:text-white">
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6" /></svg>
           </button>
         </div>
 
         {/* Day labels */}
-        <div className="mb-1 grid grid-cols-7 gap-0 text-center text-[11px] font-medium text-[#8696a0]">
+        <div className="mb-1 grid grid-cols-7 gap-0 text-center text-[11px] font-medium text-muted">
           {DAY_LABELS.map((d) => <div key={d} className="py-1">{d}</div>)}
         </div>
 
@@ -81,13 +81,13 @@ export default function CalendarPage() {
                     ? 'bg-brand-lighter/20 text-brand-lighter font-semibold'
                     : isToday
                       ? 'text-brand-lighter font-medium'
-                      : inMonth ? 'text-white hover:bg-surface' : 'text-[#445059]'
+                      : inMonth ? 'text-white hover:bg-surface' : 'text-dim'
                 }`}
               >
                 <span>{cell.date()}</span>
                 <span className="flex gap-0.5">
                   {hasTasks && <span className="h-1.5 w-1.5 rounded-full bg-brand-lighter" />}
-                  {hasExams && <span className="h-1.5 w-1.5 rounded-full bg-[#F15C6D]" />}
+                  {hasExams && <span className="h-1.5 w-1.5 rounded-full bg-danger" />}
                 </span>
               </button>
             );
@@ -96,9 +96,9 @@ export default function CalendarPage() {
 
         {/* Selected day */}
         <div className="mt-3 rounded-xl bg-surface-dark p-3 ring-1 ring-surface">
-          <p className="mb-2 text-sm font-medium text-[#8696a0]">{dayjs(selected).format('ddd, MMM D, YYYY')}</p>
+          <p className="mb-2 text-sm font-medium text-muted">{dayjs(selected).format('ddd, MMM D, YYYY')}</p>
           {!items.tasks.length && !items.exams.length && (
-            <p className="py-4 text-center text-sm text-[#8696a0]">Nothing planned for this day.</p>
+            <p className="py-4 text-center text-sm text-muted">Nothing planned for this day.</p>
           )}
           <div className="space-y-2">
             {items.tasks.map((t) => <TaskBubble key={t.id} task={t} />)}

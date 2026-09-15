@@ -52,7 +52,7 @@ export default function ExamForm({ onClose, initial }) {
           autoFocus
         />
         <div>
-          <label className="mb-1 block text-[13px] text-[#8696a0]">Date & time</label>
+          <label className="mb-1 block text-[13px] text-muted">Date & time</label>
           <input
             className="input-round"
             type="datetime-local"

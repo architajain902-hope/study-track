@@ -9,7 +9,7 @@ export default function ExamBubble({ exam, senderName = 'You' }) {
 
   return (
     <div className="flex flex-col items-start animate-pop">
-      <span className="mb-1 pl-1 text-[13px] text-[#8696a0]">{senderName}</span>
+      <span className="mb-1 pl-1 text-[13px] text-muted">{senderName}</span>
       <div className={`bubble bubble-in w-full border-l-4 ${soon ? 'border-brand-lighter' : 'border-brand-light'}`}>
         <button type="button" onClick={() => navigate(`/exam/${exam.id}`)} className="block w-full text-left">
           <div className="flex items-start gap-2">
@@ -18,11 +18,11 @@ export default function ExamBubble({ exam, senderName = 'You' }) {
               <p className="font-medium">{exam.subject}</p>
               <p className={`text-2xl font-bold ${today ? 'text-brand-lighter' : 'text-white'}`}>
                 {diff < 0 ? 'Done!' : diff === 0 ? 'Today' : diff}
-                <span className="ml-1 text-sm font-normal text-[#8696a0]">{diff > 0 ? 'days left' : ''}</span>
+                <span className="ml-1 text-sm font-normal text-muted">{diff > 0 ? 'days left' : ''}</span>
               </p>
-              {exam.notes && <p className="mt-1 whitespace-pre-line text-[13px] text-[#c1ccd1]">{exam.notes}</p>}
+              {exam.notes && <p className="mt-1 whitespace-pre-line text-[13px] text-body">{exam.notes}</p>}
               <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                <span className={`chip ${soon ? 'bg-brand-light/25 text-brand-lighter' : 'bg-surface-light text-[#aebac1]'}`}>
+                <span className={`chip ${soon ? 'bg-brand-light/25 text-brand-lighter' : 'bg-surface-light text-soft'}`}>
                   📅 {formatFull(exam.exam_date)}
                 </span>
               </div>
@@ -30,7 +30,7 @@ export default function ExamBubble({ exam, senderName = 'You' }) {
           </div>
         </button>
         <div className="mt-1 flex items-center justify-end">
-          <span className="text-[11px] text-[#8696a0]">{formatTime(exam.created_at)}</span>
+          <span className="text-[11px] text-muted">{formatTime(exam.created_at)}</span>
         </div>
       </div>
     </div>

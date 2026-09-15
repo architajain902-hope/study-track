@@ -84,7 +84,7 @@ export default function TaskForm({ onClose, initial }) {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="mb-1 block text-[13px] text-[#8696a0]">Priority</label>
+            <label className="mb-1 block text-[13px] text-muted">Priority</label>
             <select
               className="input-round bg-surface text-white"
               value={vals.priority}
@@ -96,7 +96,7 @@ export default function TaskForm({ onClose, initial }) {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-[13px] text-[#8696a0]">Recurrence</label>
+            <label className="mb-1 block text-[13px] text-muted">Recurrence</label>
             <select
               className="input-round bg-surface text-white"
               value={vals.recurrence}
